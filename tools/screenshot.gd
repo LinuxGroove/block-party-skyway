@@ -13,7 +13,7 @@ extends Node
 ## Or every level of every built world (or of one), as JPEGs in
 ## <dir>/<world>/<level>.jpg, plus any extra views a level lists in shots():
 ##   godot --path . --resolution 1280x720 tools/screenshot.tscn -- --all=docs/screenshots [world=frosty]
-## Uses its own saves (user://screenshot-progress.cfg).
+## Uses its own saves (user://screenshot-progress-<pid>.cfg).
 
 func _ready() -> void:
 	var args := OS.get_cmdline_user_args()
@@ -32,7 +32,8 @@ func _ready() -> void:
 	LGSettings.set_value("video", "fullscreen", false, false)
 	LGSettings.set_value("tutorial", "welcomed", not opts.has("welcome"), false)
 	LGSettings.set_value("player", "hero", int(opts.get("hero", 0)), false)
-	Progress.use_path("user://screenshot-progress.cfg", "user://screenshot-ghosts/")
+	var pid := OS.get_process_id()
+	Progress.use_path("user://screenshot-progress-%d.cfg" % pid, "user://screenshot-ghosts-%d/" % pid)
 	Progress.wipe()
 	for id in Courses.ids():
 		Progress.find_course(id)

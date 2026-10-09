@@ -36,7 +36,9 @@ func _ready() -> void:
 	LGTheme.apply(get_tree().root)
 	LGInput.register_actions(GameConfig.ACTIONS)
 	LGInput.extend_ui_actions()
-	Progress.use_path("user://test-progress.cfg", "user://test-ghosts/")
+	# Per process, so test runs side by side (in other checkouts) don't share saves.
+	var pid := OS.get_process_id()
+	Progress.use_path("user://test-progress-%d.cfg" % pid, "user://test-ghosts-%d/" % pid)
 	Progress.wipe()
 	if only != "":
 		await call(only)
@@ -60,6 +62,8 @@ func _ready() -> void:
 			_test_world_data(w)
 			await _test_world(w)
 	Progress.wipe()
+	DirAccess.remove_absolute(Progress.path)
+	DirAccess.remove_absolute(Progress.ghost_dir)
 	print("\n%d checks, %d failed" % [checks, failures])
 	get_tree().quit(1 if failures > 0 else 0)
 
