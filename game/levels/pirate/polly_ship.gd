@@ -25,7 +25,7 @@ func _init() -> void:
 	spawn = Vector3(0, 0, 0.5)
 	spawn_facing = Vector3.FORWARD
 	star_spot = Vector3(0, 1.4, 0.8)
-	camera_base = [0.0, 46.0, 14.0, true]
+	camera_base = [0.0, 60.0, 12.0, true]
 
 
 func build() -> void:
@@ -40,6 +40,12 @@ func build() -> void:
 	add_heart(Vector3(3.5, FOREDECK + 0.3, 6.5))
 	add_heart(Vector3(-3.0, STERN + 0.3, -13.5))
 	add_heart(Vector3(3.0, STERN + 0.3, -13.5))
+
+	# Low stacks of planks along the foot of the foredeck, so there's room
+	# for the camera between the hero and its wall.
+	for x in [-2.7, 0.0, 2.7]:
+		piece("pirate:platform-planks", Vector3(x, 0, 2.55), 90.0)
+	solid(Vector3(-4.05, 0, 1.6), Vector3(4.05, 0.43, 3.5))
 
 	# Barrels and crates about the deck, out of the way.
 	piece("pirate:barrel", Vector3(-4.6, 0, -2.5), 20.0, 0.8)

@@ -298,7 +298,7 @@ func _jump_and_pound(inp: HeroInput, i: int) -> void:
 ## Legs for dodging in the fight: laps round the mainmast while Polly
 ## throws, so her cannonballs land behind.
 static func _dodge() -> Array:
-	var corners := [Vector3(-2.2, 0, 2.0), Vector3(2.2, 0, 2.0), Vector3(2.2, 0, -2.6), Vector3(-2.2, 0, -2.6)]
+	var corners := [Vector3(-2.2, 0, 1.0), Vector3(2.2, 0, 1.0), Vector3(2.2, 0, -2.6), Vector3(-2.2, 0, -2.6)]
 	var legs := []
 	for i in 80:
 		legs.append({"to": corners[i % 4]})

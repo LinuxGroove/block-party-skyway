@@ -181,6 +181,7 @@ func _volley() -> void:
 		to.z = clampf(to.z, deck.position.z, deck.end.z)
 		var s := PirateShell.make(position + Vector3.UP * 0.8, FLIGHT, SHELL_RADIUS)
 		s.height = 3.0
+		s.knock_to = center
 		level.add(s, to)
 		shells.append(s)
 	LGAudio.play_sfx("res://assets/kenney/audio/sfx/sfx_throw.ogg", -2.0, 0.1)

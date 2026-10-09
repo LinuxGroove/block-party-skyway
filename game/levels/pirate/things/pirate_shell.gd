@@ -12,6 +12,9 @@ var flight := 1.3
 var height := 5.0
 ## How close to the landing spot counts as a hit.
 var radius := 1.0
+## Where a hit knocks the hero toward (level coordinates), to keep them off
+## the walls of a deck; unset, it knocks them away from the landing spot.
+var knock_to := Vector3.INF
 var landed := false
 
 var _t := 0.0
@@ -100,7 +103,13 @@ func _land() -> void:
 	if h:
 		var d := h.global_position - global_position
 		if Vector2(d.x, d.z).length() < radius + 0.25 and d.y > -0.6 and d.y < 1.4:
-			level.hurt_hero(global_position)
+			var away := global_position
+			if knock_to != Vector3.INF:
+				var to := level.global_position + knock_to - h.global_position
+				to.y = 0.0
+				if to.length() > 0.1:
+					away = h.global_position - to.normalized()
+			level.hurt_hero(away)
 	_burst()
 
 
