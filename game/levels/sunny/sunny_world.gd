@@ -26,6 +26,7 @@ const DEF := {
 		"sunny/tower": "Top of the Old Tower",
 		"sunny/ledge": "Under the Ledge",
 		"sunny/crates": "The Crabs' Crate",
+		"sunny/boss": "Captain Pinch",
 	},
 	"gems": ["sunny/gem_crates", "sunny/gem_far", "sunny/gem_sawmill", "sunny/gem_crabshore", "sunny/gem_windmill", "sunny/gem_treetop"],
 	## Stars a level hands out when something is done, rather than placing.
@@ -36,6 +37,7 @@ const DEF := {
 		"crabshore": "res://game/levels/sunny/crab_shore_dash.gd",
 		"windmill": "res://game/levels/sunny/windmill_hills.gd",
 		"treetop": "res://game/levels/sunny/treetop_hop.gd",
+		"pinch": "res://game/levels/sunny/pinch_arena.gd",
 	},
 	# Stars it takes for the Skyway to reach Lookout Islet.
 	"skyway": 2,

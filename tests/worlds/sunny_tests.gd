@@ -139,6 +139,145 @@ func run() -> void:
 	t.check(h.global_position.y > -2.0 and play.hearts == hearts - 1, "falling off costs a heart and comes back")
 	t._fast(false)
 	await t._free(play)
+	await _boss()
+
+
+# --- Captain Pinch -----------------------------------------------------------
+
+## The rock the fight's stand-in player is luring Captain Pinch into, and
+## which way it steps aside from the rush he's locked on to (0 for none).
+var _rock := -1
+var _dodge := 0.0
+
+
+## Captain Pinch: his door on the beach stays shut until five Sunny stars
+## are found, and the hero can beat him by luring him into the rocks and
+## jumping on him while he's dizzy (driven by _fight()), for his star.
+func _boss() -> void:
+	t._fast(true)
+	Progress.wipe()
+	var play := t._make_play("sunny", "adventure")
+	await t._ticks(6)
+	var door: BossDoor = null
+	for d in play.level.find_children("*", "BossDoor", true, false):
+		door = d
+	t.check(door != null and not door.is_open(), "Captain Pinch's door is shut at first")
+	if door:
+		play.hero.place(door.global_position + door.facing * 1.2 + Vector3.UP * 0.05)
+		await t._ticks(6)
+		t.check(play.level.nearest_talker() == door, "Captain Pinch's door is on the beach, and can be tried")
+		door.talk()
+		t.check(not play._leaving, "the shut door doesn't let you in")
+	await t._free(play)
+	for id in ["sunny/sawmill", "sunny/crabshore", "sunny/windmill", "sunny/treetop"]:
+		Progress.add_star(id)
+	play = t._make_play("sunny", "adventure")
+	await t._ticks(6)
+	for d in play.level.find_children("*", "BossDoor", true, false):
+		door = d
+	t.check(not door.is_open(), "four stars aren't enough")
+	await t._free(play)
+	Progress.add_star("sunny/tower")
+	play = t._make_play("sunny", "adventure")
+	await t._ticks(6)
+	for d in play.level.find_children("*", "BossDoor", true, false):
+		door = d
+	t.check(door.is_open() and door.talk_text() == "Face Captain Pinch", "five stars open Captain Pinch's door")
+	await t._free(play)
+	# The fight.
+	play = t._make_play("pinch", "adventure")
+	await t._ticks(6)
+	var arena := play.level as SunnyPinchArena
+	var pinch := arena.boss as SunnyPinch
+	t.check(play.hero.is_on_floor(), "the hero lands on Captain Pinch's sand bar")
+	t.check(pinch != null and pinch.health == 3, "Captain Pinch has three hearts")
+	var hits := [0]
+	pinch.health_changed.connect(func(_h, _m): hits[0] += 1)
+	var dizzy := [false]
+	_rock = -1
+	play.autopilot = _fight
+	t.check(await t._until(func():
+		if pinch.act == SunnyPinch.Act.SCUTTLE or pinch.act == SunnyPinch.Act.CHARGE:
+			# A rush is only ever a hit while he's dizzy.
+			dizzy[0] = dizzy[0] or pinch.open
+		return pinch.beaten, 120.0), "the hero beats Captain Pinch (%d hits, health %d)" % [hits[0], pinch.health])
+	t.check(not dizzy[0], "he's only open to a hit while dizzy")
+	t.check(pinch.dizzy_count >= 3, "he goes dizzy charging into the rocks (%d times)" % pinch.dizzy_count)
+	play.autopilot = t._hands_off
+	var star := t._find_star(arena, "sunny/boss")
+	t.check(star != null, "beating him drops his star")
+	if star:
+		await t._until(func(): return not play.hero.is_locked(), 3.0)
+		play.hero.place(star.global_position - Vector3.UP * 0.4)
+		t.check(await t._until(func(): return Progress.has_star("sunny/boss"), 2.0), "Captain Pinch's star is found")
+	t.check(Worlds.is_open("frosty"), "beating Captain Pinch opens Frosty Peaks")
+	# Knocked into the sea, the hero comes back by the way in.
+	var hearts := play.hearts
+	play.hero.place(Vector3(0, 0.5, 16))
+	await t._until(func(): return play.hero.global_position.z < 12.0, 3.0)
+	t.check(play.hero.global_position.distance_to(arena.spawn) < 3.0, "falling in the sea comes back at the arena's flag")
+	t._fast(false)
+	await t._free(play)
+
+
+## A stand-in player for the fight: wait between Captain Pinch and a rock,
+## step aside once he's locked on to a rush, and while he's dizzy jump on
+## him with a ground pound.
+func _fight(play: Play) -> void:
+	var h := play.hero
+	h.input.clear()
+	if play.speech_open():
+		play._next_line()
+		return
+	var arena := play.level as SunnyPinchArena
+	var pinch := arena.boss as SunnyPinch
+	if h.is_locked() or pinch.beaten:
+		return
+	h.input.run = true
+	h.input.jump_held = true
+	var to := pinch.global_position - h.global_position
+	to.y = 0.0
+	if pinch.act == SunnyPinch.Act.DIZZY:
+		if not h.is_on_floor():
+			# Over him, then pound.
+			h.input.move = to.normalized() * minf(1.0, to.length())
+			if to.length() < 1.0 and h.global_position.y > pinch.global_position.y + 1.6:
+				h.input.crouch_pressed = true
+		elif to.length() < 2.0:
+			h.input.move = -to.normalized()
+		else:
+			h.input.move = to.normalized()
+			h.input.jump = to.length() < 3.4
+		return
+	if not h.is_on_floor():
+		return
+	if pinch.locked():
+		# Out of his way, if he's coming this way: the side the hero is
+		# already on, or else the side nearer the middle.
+		var side := pinch.dir.cross(Vector3.UP).normalized()
+		var rel := h.global_position - pinch.global_position
+		rel.y = 0.0
+		var lat := rel.dot(side)
+		if _dodge == 0.0:
+			_dodge = signf(lat) if absf(lat) > 0.3 else (1.0 if side.dot(-h.global_position) >= 0.0 else -1.0)
+		if rel.dot(pinch.dir) > -1.0 and lat * _dodge < 2.8:
+			h.input.move = side * _dodge
+		return
+	_dodge = 0.0
+	# Between him and the rock furthest from him.
+	if _rock < 0 or pinch.global_position.distance_to(arena.rock_spots[_rock]) < 6.0:
+		var best := 0.0
+		for i in arena.rock_spots.size():
+			var d := pinch.global_position.distance_to(arena.rock_spots[i])
+			if d > best:
+				best = d
+				_rock = i
+	var rock: Vector3 = arena.rock_spots[_rock]
+	var lure := rock + (pinch.global_position - rock).normalized() * 3.2
+	lure.y = h.global_position.y
+	var go := lure - h.global_position
+	if go.length() > 0.3:
+		h.input.move = go.normalized() * clampf(go.length() / 1.5, 0.3, 1.0)
 
 
 # --- Saw Mill Sprint ---------------------------------------------------------
