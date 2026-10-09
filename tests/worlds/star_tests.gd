@@ -63,14 +63,15 @@ func run() -> void:
 	h.place(plaza.gate.global_position + plaza.gate.facing * 1.4 + Vector3.UP * 0.05)
 	await t._ticks(4)
 	t.check(plaza.nearest_talker() == plaza.gate, "the gate can be used")
+	# Catch the trip here instead of Play, which would change the scene.
+	var went := []
+	plaza.travel.disconnect(play._on_travel)
+	plaza.travel.connect(func(id, arrive): went.append([id, arrive]))
 	plaza.gate.talk()
-	t.check(play._leaving == plaza.gate.is_open(), "the gate leads back only when it's open")
-	if play._leaving:
-		await t._free(play)
-		play = t._make_play("star", "adventure")
-		await t._ticks(10)
-		plaza = play.level as StarPlaza
-		h = play.hero
+	t.check(went.size() == (1 if plaza.gate.is_open() else 0), "the gate leads back only when it's open")
+	if not went.is_empty():
+		t.check(went[0][0] == "station" and went[0][1].get("door", "") == "skyway:star", "the gate leads to Star Station's gate (%s)" % [went[0]])
+	plaza.travel.connect(play._on_travel)
 	# The silver lap: the button, then a silver coin on every pad.
 	h.place(plaza.silver.button.global_position + Vector3(0, 0.1, 0.8), Vector3.FORWARD)
 	await t._ticks(4)

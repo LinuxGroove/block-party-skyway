@@ -16,8 +16,14 @@ defaults:
 
 jobs:
   test:
-    name: Godot checks, tests and a bot run of Saw Mill Sprint
+    # The unit tests and data checks, and each world's islands, boss and
+    # courses, side by side.
+    name: Godot checks and tests (${{ matrix.part }})
     runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        part: [core, sunny, frosty, pirate, spooky, snack, gears, castle, station, star]
     steps:
       - uses: actions/checkout@v4
       - name: Install Godot
@@ -28,7 +34,10 @@ jobs:
       - name: Import
         run: godot --headless --path . --import
       - name: Check every script
+        if: matrix.part == 'core'
         run: godot --headless --path . tools/check_scripts.tscn 2>&1 | tee check.log; ! grep -q "SCRIPT ERROR" check.log
       - name: Run tests
-        timeout-minutes: 20
-        run: godot --headless --path . tests/run_tests.tscn -- --games=2 2>&1 | tee test.log; ! grep -q "SCRIPT ERROR" test.log
+        timeout-minutes: 30
+        run: |
+          if [ "${{ matrix.part }}" = core ]; then part=--core; else part=--world=${{ matrix.part }}; fi
+          godot --headless --path . tests/run_tests.tscn -- --games=2 "$part" 2>&1 | tee test.log; ! grep -q "SCRIPT ERROR" test.log

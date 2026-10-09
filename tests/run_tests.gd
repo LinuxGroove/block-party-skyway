@@ -5,6 +5,8 @@ extends Node
 ##   --games=N           run each course N times in Speedrun (default 1; the
 ##                       second run races the first one's ghost)
 ##   --world=frosty      only the data checks and one world's tests
+##   --core              everything but the worlds' own tests (CI runs those
+##                       side by side, one job per world)
 ##   --course=sawmill    only one course's pilot runs
 ##   --only=_test_moves  one test of this file
 ## Each world's island and boss tests, and the course pilot's legs through
@@ -23,6 +25,7 @@ func _ready() -> void:
 	var only := ""
 	var only_world := ""
 	var only_course := ""
+	var core := false
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--games="):
 			games = maxi(1, arg.substr(8).to_int())
@@ -32,6 +35,8 @@ func _ready() -> void:
 			only_world = arg.substr(8)
 		elif arg.begins_with("--course="):
 			only_course = arg.substr(9)
+		elif arg == "--core":
+			core = true
 	LGSettings.register_defaults(GameConfig.SETTING_DEFAULTS)
 	LGTheme.apply(get_tree().root)
 	LGInput.register_actions(GameConfig.ACTIONS)
@@ -60,7 +65,8 @@ func _ready() -> void:
 			await call(t)
 		for w in Worlds.built():
 			_test_world_data(w)
-			await _test_world(w)
+			if not core:
+				await _test_world(w)
 	Progress.wipe()
 	DirAccess.remove_absolute(Progress.path)
 	DirAccess.remove_absolute(Progress.ghost_dir)
@@ -608,6 +614,7 @@ func _test_skyway() -> void:
 		check(gate.is_open() == Worlds.is_built("frosty"), "the gate opens once Frosty Peaks is built and open")
 	# The pause menu lists the worlds along the Skyway.
 	play.pause.open()
+	await _frames(1)
 	play.pause._show_worlds()
 	var rows := play.pause.find_children("*", "Button", true, false).filter(func(b): return str(b.text).contains("stars") or str(b.text).contains("faded"))
 	check(rows.size() == Worlds.built().size(), "the pause menu lists every built world (%d)" % rows.size())
