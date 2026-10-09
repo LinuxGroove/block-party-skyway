@@ -84,3 +84,17 @@ func glow(at: Vector3, size := 1.6, color := Color("ffd84a")) -> void:
 ## A rainbow path from `from` to `to`, walked on like any floor.
 func rainbow_path(from: Vector3, to: Vector3, width := 2.4) -> StarBridge:
 	return add(StarBridge.make(to - from, width), from) as StarBridge
+
+
+## A square castle tower `size` metres across with its flat top at `at`,
+## `depth` metres deep: the castle kit's tower stacked up, with a cap.
+func tower(at: Vector3, size: float, depth: float) -> void:
+	var h := size / 2.0
+	solid(Vector3(at.x - h, at.y - depth, at.z - h), Vector3(at.x + h, at.y, at.z + h))
+	piece("castle:tower-top", Vector3(at.x, at.y - 0.13 * size, at.z), 0.0, size)
+	var y := at.y - 0.13 * size
+	var step := 1.01 * size
+	while y - step > at.y - depth - 0.01:
+		y -= step
+		piece("castle:tower-square-mid", Vector3(at.x, y, at.z), 0.0, size)
+	piece("castle:tower-square-base", Vector3(at.x, y - step, at.z), 0.0, size)

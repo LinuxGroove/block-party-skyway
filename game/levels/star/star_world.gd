@@ -19,6 +19,7 @@ const DEF := {
 		"blizzard_bluffs": {"name": "Blizzard Bluffs", "star": "star/blizzard_bluffs", "gem": "star/gem_blizzard_bluffs", "medals": [38500, 27500, 22100, 19300]},
 		"haunted_heights": {"name": "Haunted Heights", "star": "star/haunted_heights", "gem": "star/gem_haunted_heights", "medals": [39500, 28000, 22600, 19700]},
 		"bounce_hollow": {"name": "Bounce Hollow", "star": "star/bounce_hollow", "gem": "star/gem_bounce_hollow", "medals": [38500, 27500, 22100, 19300]},
+		"starlight_finale": {"name": "Starlight Finale", "star": "star/starlight_finale", "gem": "star/gem_starlight_finale", "medals": [59500, 42000, 34000, 29700]},
 	},
 	"boss": {},
 	"stars": {
@@ -29,10 +30,11 @@ const DEF := {
 		"star/blizzard_bluffs": "Blizzard Bluffs",
 		"star/haunted_heights": "Haunted Heights",
 		"star/bounce_hollow": "Bounce Hollow",
+		"star/starlight_finale": "Starlight Finale",
 		"star/silver": "Silver Lap",
 		"star/spire": "Top of the Spire",
 	},
-	"gems": ["star/gem_hub", "star/gem_rainbow_rush", "star/gem_cannon_crypts", "star/gem_sugar_gears", "star/gem_moon_ramparts", "star/gem_blizzard_bluffs", "star/gem_haunted_heights", "star/gem_bounce_hollow"],
+	"gems": ["star/gem_hub", "star/gem_rainbow_rush", "star/gem_cannon_crypts", "star/gem_sugar_gears", "star/gem_moon_ramparts", "star/gem_blizzard_bluffs", "star/gem_haunted_heights", "star/gem_bounce_hollow", "star/gem_starlight_finale"],
 	## Stars a level hands out when something is done, rather than placing.
 	"given": ["star/silver"],
 	"levels": {
@@ -44,5 +46,6 @@ const DEF := {
 		"blizzard_bluffs": "res://game/levels/star/blizzard_bluffs.gd",
 		"haunted_heights": "res://game/levels/star/haunted_heights.gd",
 		"bounce_hollow": "res://game/levels/star/bounce_hollow.gd",
+		"starlight_finale": "res://game/levels/star/starlight_finale.gd",
 	},
 }

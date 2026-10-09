@@ -33,6 +33,8 @@ func legs(course_id: String) -> Array:
 			return _haunted_heights()
 		"bounce_hollow":
 			return _bounce_hollow()
+		"starlight_finale":
+			return _starlight_finale()
 	return []
 
 
@@ -631,4 +633,50 @@ func _bounce_hollow() -> Array:
 		from = z - 0.6
 	out.append({"to": Vector3(0, high, from), "jump": "jump", "aim": _bounce_aim([bees[6]], Vector3(0, BounceHollow.PATCH, -114.6))})
 	out.append({"to": Vector3(0, BounceHollow.PATCH, -118.4)})
+	return out
+
+
+# --- Starlight Finale --------------------------------------------------------
+
+## Ride the sliding platforms, wait for the saws on the ice and a gap in the
+## cannon fire, hop the rotten planks, slip past the ghost, ride the donut
+## over the soda, take the crusher lift, double jump up the towers, ride the
+## updraft and bounce off the last bee to the flag.
+func _starlight_finale() -> Array:
+	var lift := StarlightFinale.LIFT
+	var tw: Array = StarlightFinale.TOWERS
+	var st := StarlightFinale.STATION
+	var top := StarlightFinale.SUMMIT
+	var land := StarlightFinale.LANDING
+	var fin := StarlightFinale.FINISH
+	var out := [
+		{"to": Vector3(0, 0, -2.6), "when": func(p): return absf(_plat_at(p, 0, 0.7).x) < 1.0},
+		{"to": Vector3(0, 0, -3.6), "jump": "jump", "aim": func(p, s): return _plat_at(p, 0, s)},
+		{"to": func(p): return Vector3(_plat_at(p, 0, 0).x, 0, -9.4), "jump": "jump", "aim": func(p, s): return _plat_at(p, 1, s)},
+		{"to": func(p): return Vector3(_plat_at(p, 1, 0).x, 0, -13.9), "jump": "jump", "aim": Vector3(0, 0, -17.8)},
+		{"to": Vector3(0, 0, -18.2), "when": func(p): return _clear_run(p, Vector3(0, 0, -18.2), Vector3(0, 0, -37.4), 0.35, 3.8)},
+		{"to": Vector3(0, 0, -42.4), "when": func(p): return _clear_run(p, Vector3(0, 0, -42.4), Vector3(0, 0, -55.4), 0.3)},
+	]
+	var from := -55.4
+	for z in StarlightFinale.PLANKS:
+		out.append({"to": Vector3(0, 0, from), "jump": "jump", "aim": Vector3(0, 0, z)})
+		from = z - 0.6
+	out.append_array([
+		{"to": Vector3(0, 0, from), "jump": "jump", "aim": Vector3(0, 0, -74.4)},
+		{"to": Vector3(0, 0, -74.8), "when": func(p): return _clear_run(p, Vector3(0, 0, -74.8), Vector3(0, 0, -83.4), 0.5)},
+		# Ride at the back of the donut, then run off its front.
+		{"to": Vector3(0, 0, -81.0), "when": func(p): return _plat_at(p, 2, 1.1).z > -88.0},
+		{"to": Vector3(0, 0, -83.5), "jump": "jump", "aim": func(p, s): return _plat_at(p, 2, s)},
+		{"to": func(p): return _plat_at(p, 2, 0) + Vector3(0, 0, 0.8), "when": func(p): return _plat_at(p, 2, 0.5).z < -92.0},
+		{"to": func(p): return _plat_at(p, 2, 0) + Vector3(0, 0, -0.9), "jump": "jump", "aim": Vector3(0, 0, -97.0)},
+		{"to": lift + Vector3(0, 0, 2.4), "when": func(p): return _lift_ready(p, lift),
+			"jump": "jump", "aim": lift + Vector3.UP},
+		{"to": lift, "when": func(p): return _lift_up(p, lift), "jump": "jump", "aim": Vector3(0, 4.0, -107.3)},
+		{"to": Vector3(0, 4.0, -110.4), "jump": "double", "aim": tw[0]},
+		{"to": tw[0] + Vector3(-0.3, 0, -0.9), "jump": "double", "aim": tw[1]},
+		{"to": tw[1] + Vector3(0.3, 0, -0.9), "jump": "jump", "aim": Vector3(0, st, -125.0)},
+		{"to": Vector3(0, st, -130.4), "jump": "jump", "aim": Vector3(0, top, -136.0)},
+		{"to": Vector3(0, top, -141.6), "jump": "jump", "aim": _bounce_aim([StarlightFinale.BEE], Vector3(0, land, -151.6))},
+		{"to": fin + Vector3(0, 0, 0.6)},
+	])
 	return out
