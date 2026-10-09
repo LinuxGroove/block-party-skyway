@@ -1,7 +1,8 @@
 class_name Boss
 extends Node3D
-## Base for bosses: health, a short spell of not being hurt after each hit,
-## and a body that hurts the hero to touch unless it's open to a stomp.
+## Base for bosses: health, a short spell after each hit when the boss
+## neither takes another nor hurts the hero (who is bouncing off it), and a
+## body that hurts the hero to touch unless it's open to a stomp.
 ##
 ## A boss subclass moves in think() and decides when it can be hit by
 ## setting `open` (stunned, dizzy, its weak spot showing). While open,
@@ -87,7 +88,7 @@ func _on_touched(body: Node3D) -> void:
 		if not h.is_diving():
 			h.bounce(13.0)
 		hit()
-	elif invulnerable <= 0.0 or not open:
+	elif invulnerable <= 0.0:
 		level.hurt_hero(global_position)
 
 
