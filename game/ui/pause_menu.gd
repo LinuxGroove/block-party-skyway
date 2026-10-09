@@ -48,6 +48,7 @@ func _build() -> void:
 		_col.add_child(LGUi.button("Leave the arena" if play.is_boss() else "Leave the course", _leave_course, 460))
 	else:
 		_col.add_child(LGUi.button("Back to the last flag", _to_flag, 460))
+		_col.add_child(LGUi.button("Travel the Skyway", _show_worlds, 460))
 	add_comfort(_col, 460)
 	_col.add_child(LGUi.button("How to play", _howto, 460))
 	var quit := LGUi.button("Back to the title", _quit, 460)
@@ -86,6 +87,37 @@ func close() -> void:
 	var f := get_viewport().gui_get_focus_owner()
 	if f:
 		f.release_focus()
+
+
+## The worlds along the Skyway, with the stars found in each; open ones can
+## be travelled to.
+func _show_worlds() -> void:
+	for c in _col.get_children():
+		_col.remove_child(c)
+		c.queue_free()
+	_col.add_child(LGUi.label("The Skyway", "HeaderMedium"))
+	for w in Worlds.built():
+		var text := "%s  ·  %d / %d stars" % [Worlds.world_name(w), Progress.star_count(w), Worlds.star_ids(w).size()]
+		var b := LGUi.button(text, _travel.bind(w), 460)
+		if not Worlds.is_open(w):
+			b.text = "%s  ·  faded" % Worlds.world_name(w)
+			b.disabled = true
+		elif w == play.world():
+			b.disabled = true
+		_col.add_child(b)
+	_col.add_child(LGUi.button("Back", _back_from_worlds, 460))
+	LGUi.focus_first(_col)
+
+
+func _back_from_worlds() -> void:
+	_build()
+	LGUi.focus_first(_col)
+
+
+func _travel(w: String) -> void:
+	visible = false
+	get_tree().paused = false
+	play.travel_to_world(w)
 
 
 func _restart() -> void:

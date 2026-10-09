@@ -1,9 +1,10 @@
 class_name MenuBackdrop
 extends Node3D
-## Behind the menus: Sunny Isles, with the chosen astronaut waving at the
-## start and the camera drifting slowly round.
+## Behind the menus: the island the player was last on (Sunny Isles at
+## first), with the chosen astronaut waving at its start and the camera
+## drifting slowly round.
 
-var level: SunnyIsle
+var level: Level
 var astronaut: RigCharacter
 var _cam: Camera3D
 var _angle := 0.4
@@ -11,7 +12,10 @@ var _hero := -1
 
 
 func _ready() -> void:
-	level = Levels.make("sunny") as SunnyIsle
+	var id := str(Progress.island_spot.get("level", "sunny"))
+	if not Worlds.is_built(Worlds.world_of(id)) or id != str(Worlds.get_def(Worlds.world_of(id)).island):
+		id = "sunny"
+	level = Levels.make(id)
 	level.found_stars = Progress.stars.duplicate()
 	level.found_gems = Progress.gems.duplicate()
 	add_child(level)
@@ -33,7 +37,7 @@ func show_hero(i: int) -> void:
 	if astronaut:
 		astronaut.queue_free()
 	astronaut = RigCharacter.create(GameConfig.hero_scene(i), 1.6)
-	astronaut.position = Vector3(0, 0, 6)
+	astronaut.position = level.spawn + level.spawn_facing * 3.0
 	add_child(astronaut)
 	astronaut.play_once("emote-yes")
 
@@ -46,6 +50,6 @@ func _process(delta: float) -> void:
 
 
 func _place_camera() -> void:
-	var focus := Vector3(2, 0, 0)
+	var focus := level.spawn + level.spawn_facing * 9.0 + Vector3(2, 0, 0)
 	_cam.position = focus + Vector3(sin(_angle) * 26.0, 13.0, cos(_angle) * 26.0)
 	_cam.look_at(focus + Vector3.UP * 1.0, Vector3.UP)

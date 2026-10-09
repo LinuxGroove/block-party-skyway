@@ -419,6 +419,16 @@ func _on_finished() -> void:
 		level.collect_star(str(Courses.get_def(level_id).star))
 
 
+## Straight to another world's island (from the pause menu).
+func travel_to_world(w: String) -> void:
+	if _leaving:
+		return
+	_leaving = true
+	Progress.island_spot = {}
+	Progress.save()
+	Play.open(str(Worlds.get_def(w).island), "adventure")
+
+
 ## From a course or the boss's arena back out of its door on the island.
 func back_to_island() -> void:
 	_leaving = true

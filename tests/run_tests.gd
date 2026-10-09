@@ -606,6 +606,12 @@ func _test_skyway() -> void:
 		Progress.add_star(str(Worlds.boss_def("sunny").star))
 		check(Worlds.is_open("frosty"), "beating Captain Pinch opens Frosty Peaks")
 		check(gate.is_open() == Worlds.is_built("frosty"), "the gate opens once Frosty Peaks is built and open")
+	# The pause menu lists the worlds along the Skyway.
+	play.pause.open()
+	play.pause._show_worlds()
+	var rows := play.pause.find_children("*", "Button", true, false).filter(func(b): return str(b.text).contains("stars") or str(b.text).contains("faded"))
+	check(rows.size() == Worlds.built().size(), "the pause menu lists every built world (%d)" % rows.size())
+	play.pause.close()
 	await _free(play)
 	# Arriving through a door or gate puts the hero in front of it.
 	play = _make_play("sunny", "adventure", {"door": "sawmill"})

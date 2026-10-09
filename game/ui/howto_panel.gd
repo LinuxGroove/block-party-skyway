@@ -38,6 +38,8 @@ static func pages() -> Array:
 			"King Thud has pulled the stars out of the sky and hidden them all over the islands. Without them, the Skyway's rainbow bridges have faded away.\n\nEvery star you find brings a piece of the Skyway back, and the map grows from there."},
 		{"title": "Adventure", "body":
 			"Roam the islands and look everywhere. Stars hide at the end of course doors, on the hardest ledges to reach, in crates, and with islanders who need a hand. Hidden gems are tucked away too.\n\nFall off and you're back at the last flag, with nothing lost."},
+		{"title": "The worlds", "body":
+			"Eight worlds lie along the Skyway, from Sunny Isles to King Thud's Star Station. Each has an island to explore, four course doors and a boss.\n\nFind five of a world's stars and its boss's door opens. Beat the boss and the Skyway to the next world comes back. The rainbow gates on each island lead along it, and the pause menu takes you to any world you've opened."},
 		{"title": "Speedrun", "body":
 			"Every course you find in Adventure opens in Speedrun. Run it against the clock for bronze, silver and gold medals, and race your best run's ghost.\n\nStart again any time with one button."},
 		{"title": "Moves", "body": "", "rows": MOVES},
