@@ -8,6 +8,9 @@ const Runner := preload("res://tests/run_tests.gd")
 
 ## The test runner, for check(), _until(), _make_play() and the rest.
 var t: Runner
+## What The Big Press's arena said, and how often the hero was hurt there.
+var _said: Array[String] = []
+var _hurts := 0
 
 
 ## The pilot's legs through one of this world's courses.
@@ -269,11 +272,6 @@ func _gems(play: Play, isle: GearsIsle) -> void:
 
 
 # --- The Big Press -----------------------------------------------------------
-
-## What the arena said, and how often the hero was hurt.
-var _said: Array[String] = []
-var _hurts := 0
-
 
 func _heard(text: String) -> void:
 	_said.append(text)

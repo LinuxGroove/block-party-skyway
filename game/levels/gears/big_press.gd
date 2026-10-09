@@ -178,10 +178,6 @@ func _follow(target: Vector3, speed: float, delta: float) -> void:
 		flat += to.normalized() * step
 	position.x = flat.x
 	position.z = flat.z
-	# Turn the face towards the hero, slowly.
-	var look := hero().global_position - global_position
-	if Vector2(look.x, look.z).length() > 0.5:
-		_head.rotation.y = lerp_angle(_head.rotation.y, atan2(look.x, look.z), minf(delta * 3.0, 1.0))
 
 
 func _go(p: Phase) -> void:
