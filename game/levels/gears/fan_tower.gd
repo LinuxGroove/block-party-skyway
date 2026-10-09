@@ -81,6 +81,11 @@ func build() -> void:
 
 
 func _scenery() -> void:
+	GearsDecor.strip(self, Vector3(0, 0, 3), Vector3(0, 0, -3))
+	GearsDecor.arrow(self, Vector3(0, 0, -3.4), Vector3.FORWARD)
+	GearsDecor.strip(self, Vector3(-21, 17, -50), Vector3(-28, 17, -50))
+	for c in [[Vector3(-3.7, 2, -15), 6.0, 90.0], [Vector3(4.7, 7.5, -50), 6.0, 90.0], [Vector3(-17.5, 7.5, -54.7), 6.0, 0.0], [Vector3(-29.7, 14, -50), 6.0, 90.0]]:
+		add(GearsBigCog.make(c[1], c[2], -10.0), c[0])
 	piece("factory:machine", Vector3(-2.2, 0, -1.8), 90.0, 1.2)
 	piece("factory:hopper-round", Vector3(2.4, 0, -2.0), 0.0, 1.2)
 	for at in [Vector3(-2.5, 5, -21.3), Vector3(2.5, 5, -21.3), Vector3(-3.4, 10.5, -53.4)]:

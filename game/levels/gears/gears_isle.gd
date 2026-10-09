@@ -110,6 +110,13 @@ func _yard() -> void:
 	piece("factory:robot-arm-b", Vector3(5.5, 0, -7.2), 180.0, 1.4)
 	for x in [-10.5, -8.5, 6.5, 8.5]:
 		deco("factory:indicator-special-lines", Vector3(x, 0.01, 11.5), 0.0, 1.0)
+	# A big cog set in the floor, and Scamp's track round it.
+	_emblem(Vector3(0, 0, 1), 7.0)
+	for i in SCAMP_PATH.size():
+		var a: Vector3 = SCAMP_PATH[i]
+		var b: Vector3 = SCAMP_PATH[(i + 1) % SCAMP_PATH.size()]
+		GearsDecor.strip(self, a, b)
+		GearsDecor.arrow(self, (a + b) / 2.0 + Vector3.UP * 0.01, b - a)
 
 
 func _talk_bolt() -> void:
@@ -189,6 +196,14 @@ func _terrace() -> void:
 			piece("factory:box-small", Vector3(side, 2.4, z), 90.0, 1.3)
 		solid(Vector3(side - 0.6, 2, -22), Vector3(side + 0.6, 2.4, -9))
 	coin_line(Vector3(-5, 2, -17), Vector3(5, 2, -17), 5)
+	# A walkway up to the press's door, marks before the course doors, and
+	# big cogs turning behind the hall.
+	GearsDecor.strip(self, Vector3(0, 2, -9), Vector3(0, 2, -19))
+	for x in [-7.0, 7.0]:
+		deco("factory:indicator-special-area", Vector3(x, 2.02, -17.2), 0.0, 1.8)
+	add(GearsBigCog.make(7.0, 0.0, 10.0), Vector3(-7.5, 2, -26.4))
+	add(GearsBigCog.make(5.0, 0.0, -14.0, "factory:cog-c"), Vector3(-2.5, 2, -26.6))
+	add(GearsBigCog.make(6.0, 0.0, 12.0, "factory:cog-b"), Vector3(7.5, 2, -26.4))
 
 
 # --- The crane yard, across the conveyor bridge -------------------------------
@@ -223,6 +238,10 @@ func _crane_yard() -> void:
 		_box(at, 1.5)
 	for at in [Vector3(16.5, 0, 5.5), Vector3(27.5, 0, 5.5), Vector3(16.5, 0, -11.5)]:
 		deco("factory:warning-traffic", at, 0.0, 1.4)
+	# Cogs turning in the deck's east side.
+	add(GearsBigCog.make(6.0, 90.0, 9.0), Vector3(28.7, -3.0, 1))
+	add(GearsBigCog.make(4.0, 90.0, -13.5, "factory:cog-c"), Vector3(28.7, -2.0, -4.5))
+	GearsDecor.strip(self, Vector3(17, 0, 1), Vector3(17, 0, -9))
 
 
 # --- The belt works, down to the west ----------------------------------------
@@ -242,7 +261,7 @@ func _belt_works() -> void:
 	add_star("gears/switch", Vector3(-26, 6.4, 2.5))
 	if found_stars.has("gears/switch"):
 		shift_switch.hold()
-	add_sign("Step on the shift_switch and steps slide out for ten seconds. Climb to the top!", Vector3(-14.5, -1, 9), Vector3(-0.3, 0, 1).normalized())
+	add_sign("Step on the switch and steps slide out for ten seconds. Climb to the top!", Vector3(-14.5, -1, 9), Vector3(-0.3, 0, 1).normalized())
 	# The boiler house: a crusher's top makes a lift up to the roof.
 	land(-22, -10, -18, -6, 3.0, 4)
 	add(Crusher.make(3.0, Vector3(2, 1, 2)), Vector3(-17, -1, -8))
@@ -268,6 +287,15 @@ func _belt_works() -> void:
 	coin_line(Vector3(-17, -1, 0), Vector3(-25, -1, 0), 5)
 	for at in [Vector3(-27.3, -1, -9.3), Vector3(-12.7, -1, -9.3)]:
 		deco("factory:warning-orange", at, 0.0, 1.4)
+	GearsDecor.strip(self, Vector3(-14, -1, 3), Vector3(-26, -1, 3))
+	GearsDecor.arrow(self, Vector3(-16.5, -1, 6.2), Vector3.LEFT)
+	add(GearsBigCog.make(5.0, 90.0, -10.0, "factory:cog-b"), Vector3(-28.7, -3.5, 6.5))
+	# Belts along the north side, carrying boxes.
+	for x in range(-27, -17, 2):
+		piece("factory:conveyor-long", Vector3(x + 1, -1, -9.4), 0.0, 1.0)
+	for x in [-26.0, -22.5]:
+		piece("factory:box-small", Vector3(x, -0.6, -9.4), 0.0, 1.3)
+	solid(Vector3(-27, -1, -10), Vector3(-17, -0.6, -8.8))
 
 
 # --- The loading dock, to the south ------------------------------------------
@@ -300,9 +328,21 @@ func _dock() -> void:
 	piece("factory:hopper-high-square", Vector3(1, 0, 23), 0.0, 1.5)
 	solid(Vector3(0.2, 0, 22.2), Vector3(1.8, 2.2, 23.8))
 	coin_line(Vector3(-4, 0, 18.5), Vector3(4, 0, 18.5), 5)
+	GearsDecor.strip(self, Vector3(0, 0, 15.2), Vector3(0, 0, 19.2))
+	for x in [-3.0, 5.0]:
+		deco("factory:indicator-special-area", Vector3(x, 0.02, 20.2), 0.0, 1.8)
+	add(GearsBigCog.make(5.0, 0.0, 11.0), Vector3(-3.5, -2.5, 24.6))
+	add(GearsBigCog.make(3.5, 0.0, -15.0, "factory:cog-c"), Vector3(1.2, -1.75, 24.6))
 
 
 # --- Pieces ------------------------------------------------------------------
+
+## A big cog set flush into the floor, `size` metres across.
+func _emblem(at: Vector3, size: float) -> void:
+	var m := Kit.model("factory:cog-e")
+	m.scale = Vector3(size, 0.2, size)
+	m.position = at + Vector3.UP * 0.006
+	add_child(m)
 
 ## A stacked shipping box (Factory Kit), solid.
 func _box(at: Vector3, scale := 1.5) -> void:

@@ -130,6 +130,13 @@ func _crusher(height: float) -> Crusher:
 
 
 func _scenery() -> void:
+	GearsDecor.strip(self, Vector3(0, 0, 3), Vector3(0, 0, -3))
+	GearsDecor.arrow(self, Vector3(0, 0, -2.6), Vector3.FORWARD)
+	GearsDecor.strip(self, Vector3(0, 0, -45.6), Vector3(0, 0, -47.6))
+	GearsDecor.arrow(self, Vector3(-1.2, 0, -47), Vector3.LEFT)
+	GearsDecor.strip(self, Vector3(-26, 3.5, -47), Vector3(-31, 3.5, -47))
+	for c in [[Vector3(3.7, -3, -28), 6.0, 90.0], [Vector3(-3.7, -2.5, -29), 5.0, 90.0], [Vector3(7.7, -3, -47), 6.0, 90.0], [Vector3(-32.7, 0.5, -47), 6.0, 90.0]]:
+		add(GearsBigCog.make(c[1], c[2], 11.0), c[0])
 	piece("factory:machine", Vector3(-2.2, 0, -2.6), 90.0, 1.2)
 	piece("factory:hopper-round", Vector3(2.4, 0, -2.8), 0.0, 1.2)
 	for at in [Vector3(2.4, 0, -31.3), Vector3(-2.4, 0, -24.7), Vector3(6.4, 0, -44.7)]:

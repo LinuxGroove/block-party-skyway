@@ -108,6 +108,12 @@ func _beat(p: GearsPiston) -> void:
 
 
 func _scenery() -> void:
+	GearsDecor.strip(self, Vector3(0, 0, 3), Vector3(0, 0, -3))
+	GearsDecor.arrow(self, Vector3(0, 0, -2.6), Vector3.FORWARD)
+	GearsDecor.strip(self, Vector3(0, 7, -18), Vector3(0, 7, -24))
+	GearsDecor.strip(self, Vector3(-16, 15, -34), Vector3(-21, 15, -34))
+	for c in [[Vector3(-3.7, -3, 0), 6.0, 90.0], [Vector3(-4.7, 4, -22), 6.0, 90.0], [Vector3(-1.5, 10, -38.7), 6.0, 0.0], [Vector3(-22.7, 12, -34), 6.0, 90.0]]:
+		add(GearsBigCog.make(c[1], c[2], 10.0), c[0])
 	piece("factory:machine", Vector3(-2.2, 0, -2.8), 90.0, 1.2)
 	piece("factory:hopper-round", Vector3(2.4, 0, -3.0), 0.0, 1.2)
 	piece("factory:machine-window", Vector3(3.2, 7, -21), -90.0, 1.3)

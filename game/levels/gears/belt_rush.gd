@@ -27,7 +27,8 @@ func build() -> void:
 	# The start pad.
 	land(-3, -6, 3, 4, 0, 3)
 	add_sign("Belts push you about. Keep running, and jump the gaps!", Vector3(-2, 0, 1))
-	deco("factory:indicator-special-arrow", Vector3(0, 0.01, -4.5), 180.0, 1.6)
+	GearsDecor.strip(self, Vector3(0, 0, 3), Vector3(0, 0, -5))
+	GearsDecor.arrow(self, Vector3(0, 0, -4), Vector3.FORWARD)
 	for x in [-2.5, 2.5]:
 		deco("factory:warning-orange", Vector3(x, 0, 3.2), 0.0, 1.3)
 
@@ -105,6 +106,12 @@ func build() -> void:
 
 
 func _scenery() -> void:
+	# Big cogs turning in the sides of the decks.
+	for c in [[Vector3(3.7, -3, -1), 6.0, 90.0], [Vector3(-3.7, -2.5, -2), 5.0, 90.0], [Vector3(3.7, -3, -40), 6.0, 90.0],
+			[Vector3(-3.7, -2, -41), 4.0, 90.0], [Vector3(1, -3, -67.7), 6.0, 0.0], [Vector3(31.7, -3, -64), 6.0, 90.0]]:
+		add(GearsBigCog.make(c[1], c[2], 9.0 if int(c[0].z) % 2 == 0 else -11.0), c[0])
+	GearsDecor.strip(self, Vector3(0, 0, -46), Vector3(0, 0, -50))
+	GearsDecor.strip(self, Vector3(24, 0, -64), Vector3(30, 0, -64))
 	# Machines and boxes beside the belts, out of the way.
 	piece("factory:machine", Vector3(-2.2, 0, -5.0), 90.0, 1.2)
 	piece("factory:hopper-round", Vector3(2.4, 0, -5.2), 0.0, 1.2)
