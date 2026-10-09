@@ -327,7 +327,9 @@ func water(x0: float, z0: float, x1: float, z1: float, y: float, color := Color(
 
 func _on_water(body: Node3D) -> void:
 	if body == hero:
-		fall_off()
+		# Deferred: a Speedrun starts over by rebuilding the level, which
+		# can't happen inside a physics callback.
+		fall_off.call_deferred()
 
 
 ## Sends the hero back to the last flag, as if they'd fallen off.
