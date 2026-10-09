@@ -29,6 +29,8 @@ func legs(course_id: String) -> Array:
 			return _moon_ramparts()
 		"blizzard_bluffs":
 			return _blizzard_bluffs()
+		"haunted_heights":
+			return _haunted_heights()
 	return []
 
 
@@ -512,3 +514,63 @@ func _blizzard_bluffs() -> Array:
 		{"to": Vector3(0, top.call(3), -99.4), "jump": "jump", "aim": fin + Vector3(0, 0, 4.5)},
 		{"to": fin + Vector3(0, 0, -0.5)},
 	]
+
+
+# --- Haunted Heights ---------------------------------------------------------
+
+## Wait for the graveyard's ghosts, kick up the first slot, past the ghost on
+## the tier, hop the crumbling stones, spring when the ghost has drifted off,
+## along the wall walk between ghosts, and kick up the last slot to the flag.
+func _haunted_heights() -> Array:
+	var s0: Vector3 = HauntedHeights.SLOTS[0]
+	var s1: Vector3 = HauntedHeights.SLOTS[1]
+	var t0: float = HauntedHeights.SLOT_TOPS[0]
+	var t1: float = HauntedHeights.SLOT_TOPS[1]
+	var st: Array = HauntedHeights.STONES
+	var spring := HauntedHeights.SPRING
+	var out := [
+		{"to": Vector3(0, 0, -7.0), "when": func(p): return _clear_run(p, Vector3(0, 0, -7.0), Vector3(0, 0, -14.0), 0.5)},
+		{"to": Vector3(0, 0, -14.0), "when": func(p): return _clear_run(p, Vector3(0, 0, -14.0), Vector3(0, 0, -21.0), 0.5)},
+		{"to": Vector3(s0.x, 0, -23.0)},
+		{"to": s0 + Vector3(0, 0, -1.3), "walk": true},
+		{"wall": true, "toward": Vector3.RIGHT, "top": t0 + 0.3, "off": Vector3.FORWARD,
+			"until": func(p): return p.hero.is_on_floor() and p.hero.global_position.y > t0 - 0.1 and p.hero.global_position.z < s0.z - 2.1},
+		{"to": Vector3(0, t0, -29.6), "when": func(p): return _clear_run(p, Vector3(0, t0, -29.6), Vector3(0, t0, -35.4), 0.5)},
+		{"to": Vector3(0, t0, -35.4), "jump": "jump", "aim": st[0]},
+	]
+	for i in range(1, st.size()):
+		out.append({"to": st[i - 1] + Vector3(0, 0, -0.5), "jump": "jump", "aim": st[i]})
+	var walk := HauntedHeights.WALK
+	out.append_array([
+		{"to": st[st.size() - 1] + Vector3(0, 0, -0.5), "jump": "jump", "aim": Vector3(0, spring.y, -57.4)},
+		{"to": spring + Vector3(0, 0, 1.6), "when": func(p): return _ghost_clear(p, HauntedHeights.SPRING_GHOST, 0.25, 0.8)},
+		{"to": spring, "until": func(p): return p.hero.velocity.y > 10.0},
+		{"to": Vector3(0, walk, -64.0), "stop": true, "until": func(p): return p.hero.is_on_floor() and p.hero.global_position.y > walk - 0.3},
+		{"to": Vector3(0, walk, -64.0), "when": func(p): return _clear_run(p, Vector3(0, walk, -64.0), Vector3(0, walk, -69.5), 0.5)},
+		{"to": Vector3(0, walk, -69.5), "when": func(p): return _clear_run(p, Vector3(0, walk, -69.5), Vector3(0, walk, -74.5), 0.5)},
+		{"to": Vector3(0, walk, -74.5), "when": func(p): return _clear_run(p, Vector3(0, walk, -74.5), Vector3(0, walk, -79.5), 0.5)},
+		{"to": Vector3(0, walk, -79.5), "when": func(p): return _clear_run(p, Vector3(0, walk, -79.5), Vector3(0, walk, -84.4), 0.5)},
+		{"to": Vector3(s1.x, walk, -85.0)},
+		{"to": s1 + Vector3(0, 0, -1.3), "walk": true},
+		{"wall": true, "toward": Vector3.RIGHT, "top": t1 + 0.3, "off": Vector3.FORWARD,
+			"until": func(p): return p.hero.is_on_floor() and p.hero.global_position.y > t1 - 0.1 and p.hero.global_position.z < s1.z - 2.1},
+		{"to": Vector3(0, t1, -97.0)},
+	])
+	return out
+
+
+## True if the ghost that started at `start` will stay well away from the
+## middle (x = 0) from `from` to `to` seconds from now.
+static func _ghost_clear(play: Play, start: Vector3, from: float, to: float) -> bool:
+	for n in play.level.find_children("*", "Critter", true, false):
+		var cr := n as Critter
+		if cr._start.distance_to(start) > 0.5:
+			continue
+		var t := from
+		while t <= to:
+			var c := cr._start + cr.travel * _wave(cr._t + t, cr.period)
+			if absf(c.x) < 1.6:
+				return false
+			t += 1.0 / 30.0
+		return true
+	return true
