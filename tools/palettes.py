@@ -31,6 +31,7 @@ WORLDS = {
     "gears": {TOP: ("#b8c2cf", "#7d8899"), SNOW: ("#e3c55a", "#c49a2c"), SIDE: ("#6f7584", "#434856")},
     "castle": {TOP: ("#86c46d", "#4f8c4a"), SNOW: ("#d9d4c7", "#a8a191"), SIDE: ("#a59d8e", "#6e675b")},
     "station": {TOP: ("#d4dbe6", "#97a3b8"), SNOW: ("#9fe3f0", "#4fb3cc"), SIDE: ("#5a6280", "#33394f")},
+    "star": {TOP: ("#fff1a8", "#f2c94c"), SNOW: ("#fff8e0", "#ffe08a"), SIDE: ("#9d86f0", "#5a46b8")},
 }
 
 
