@@ -1,13 +1,17 @@
 class_name SunnyIsle
 extends Island
 ## Sunny Isles' first island, for Adventure: a meadow with a terrace to the
-## north (and the door to Saw Mill Sprint), Pebble the penguin's hollow to
-## the west, the old tower to the east, and Lookout Islet across the Skyway
-## once two stars are found.
+## north (and the door to Saw Mill Sprint), Windmill Hill beyond it to the
+## west and a grove of giant trees to the east (the doors to Windmill Hills
+## and Treetop Hop), Pebble the penguin's hollow to the west, the old tower
+## to the east, a beach to the south (the door to Crab Shore Dash, and
+## Captain Pinch's door, shut until five stars are found), and Lookout
+## Islet across the Skyway once two stars are found, with the Skyway on to
+## Frosty Peaks.
 ##
-## Stars: the course, Pebble's lost chicks, the silver coin rush, the top of
-## the old tower, a ledge hidden under the north cliff, and the crabs' crate
-## on Lookout Islet. Two hidden gems, plus one in the course.
+## Island stars: Pebble's lost chicks, the silver coin rush, the top of the
+## old tower, a ledge hidden under the north cliff, and the crabs' crate on
+## Lookout Islet. Two hidden gems here, plus one in each course.
 
 const SILVER_TIME := 30.0
 
@@ -23,18 +27,33 @@ func _init() -> void:
 	title = "Sunny Isles"
 	spawn = Vector3(0, 0, 9)
 	spawn_facing = Vector3.FORWARD
+	# Sand for the beach; the grass keeps the kit's colours.
+	block_palette = SunnyCrabShore.SAND
 
 
 func build() -> void:
 	_meadow()
 	_terrace()
+	_windmill_hill()
+	_grove()
 	_hollow()
 	_tower()
+	_beach()
 	_lookout()
 	_scenery()
 	finish()
 	if world_stars() >= int(Worlds.get_def(world).skyway):
 		bridge.show_bridge(false)
+
+
+## Extra views for the screenshots: the beach with its two doors, Windmill
+## Hill and the grove.
+func shots() -> Array:
+	return [
+		{"name": "beach", "at": Vector3(2.5, 0, 20.4), "face": Vector3.FORWARD},
+		{"name": "windmill", "at": Vector3(-13.5, 2, -10.6), "face": Vector3.FORWARD, "stick": Vector2(0, -1)},
+		{"name": "grove", "at": Vector3(12.2, 2, -17), "face": Vector3.RIGHT},
+	]
 
 
 func collect_star(id: String) -> void:
@@ -75,6 +94,7 @@ func _meadow() -> void:
 		"Psst. Stars hide in odd places. Have you looked over the edge of the north cliff?",
 		"The old tower? Kick off one wall, then the other. Up you go.",
 		"The crabs here are grumpy. Jump on them and they pop right into coins.",
+		"Their captain is the grumpiest of all. He sits behind a big door down on the beach.",
 	], 0.4)
 	truffle.facing = Vector3(0.5, 0, 1).normalized()
 	add(truffle, Vector3(6, 0, -7.5))
@@ -93,6 +113,49 @@ func _terrace() -> void:
 	add_star("sunny/ledge", Vector3(4.5, -1.3, -24.5))
 	add(Spring.new(), Vector3(2.7, -1.5, -23.6))
 	camera_zone(Vector3(1, -6, -27), Vector3(7, 0.2, -22.5), 180.0, 26.0, 8.0, false, 2)
+
+
+# --- Windmill Hill, north-west ----------------------------------------------
+
+func _windmill_hill() -> void:
+	land(-20, -22, -8, -10, 2, 5)
+	land(-19, -21, -14, -16, 3, 1)
+	ramp(Vector3(-13, 2, -18.5), Vector3.LEFT)
+	var mill := SunnyWindmill.new()
+	mill.facing = Vector3.BACK
+	add(mill, Vector3(-17, 3, -18.5))
+	add_course_door("windmill", Vector3(-12, 2, -12.5), Vector3.RIGHT)
+	add_checkpoint(Vector3(-10, 2, -20), Vector3.RIGHT)
+	add_islander("animal-cow", "Clover", [
+		"Moo. That door leads up the Windmill Hills.",
+		"Bars spin round on the hilltops. Wait for one to sweep past, then run!",
+		"And the springs throw you right up the cliffs. Steer while you fly.",
+	], Vector3(-10.5, 2, -16), Vector3(0.6, 0, 1).normalized(), 0.4)
+	var bee := Critter.make("animal-bee", Vector3(4, 0, 0), 4.0)
+	bee.bob = 0.3
+	add(bee, Vector3(-19.5, 2, -14.5))
+	coin_line(Vector3(-11, 2, -21), Vector3(-17, 2, -21), 4)
+	# A spring in the hollow below throws you up here.
+	add(Spring.new(), Vector3(-17.5, -1, -5.4))
+	add_sign("Springs throw you high!", Vector3(-13.2, -1, -4.6), Vector3.BACK)
+
+
+# --- The giant trees, north-east -----------------------------------------------
+
+func _grove() -> void:
+	land(10, -22, 21, -12, 2, 5)
+	for t in [[Vector3(13, 2, -20), 2.8], [Vector3(19, 2, -14), 2.6], [Vector3(19.5, 2, -20.5), 2.2]]:
+		tree(t[0], "tree", t[1])
+	add_course_door("treetop", Vector3(17.5, 2, -17), Vector3.LEFT)
+	add_islander("animal-monkey", "Mango", [
+		"Up in the treetops the planks drop once you stand on them. So don't stand still!",
+		"Some branches are too high for one jump. Crouch, then jump.",
+	], Vector3(14, 2, -14.5), Vector3(-0.6, 0, 1).normalized(), 0.4)
+	add(Critter.make("animal-caterpillar", Vector3(0, 0, -4), 3.5, 0.2), Vector3(11.5, 2, -13))
+	add_heart(Vector3(20, 2, -21))
+	for at in [Vector3(15, 2, -21), Vector3(11, 2, -18), Vector3(16, 2, -12.8)]:
+		deco("mushrooms", at, at.x * 17.0, 1.5)
+	coin_ring(Vector3(14.5, 2, -17.5), 1.5, 6)
 
 
 # --- Pebble's hollow, to the west --------------------------------------------
@@ -168,6 +231,38 @@ func _tower() -> void:
 	add_sign("Jump at a wall, then jump again to kick off it.", Vector3(14, 0, -2.2))
 	coin_line(Vector3(15.5, 1.5, -5), Vector3(15.5, 5.5, -5), 4)
 	camera_zone(Vector3(11, -1, -9), Vector3(19, 12, -1), 0.0, 16.0, 11.0, false, 1)
+
+
+# --- The beach, to the south --------------------------------------------------
+
+func _beach() -> void:
+	# Sand all round a little lagoon.
+	land(-10, 12, 14, 14, 0, 3, "snow")
+	land(-10, 14, 3, 21, 0, 3, "snow")
+	land(9, 14, 14, 21, 0, 3, "snow")
+	land(3, 18, 9, 21, 0, 3, "snow")
+	land(3, 14, 9, 18, -1.5, 2, "snow")
+	water(3, 14, 9, 18, -0.35)
+	ledge(5, 15, 7, 17, -0.1, "snow")
+	coin_ring(Vector3(6, -0.1, 16), 0.6, 4)
+	add_checkpoint(Vector3(-2, 0, 13.5), Vector3.BACK)
+	add_course_door("crabshore", Vector3(-6, 0, 19), Vector3.FORWARD)
+	# Captain Pinch's door, out on the rocky point.
+	add_boss_door(Vector3(11.5, 0, 19), Vector3.FORWARD)
+	add_islander("animal-crab", "Sandy", [
+		"Crab Shore Dash? I hold the record. Well. I would, if the tide hadn't been against me.",
+		"The rafts out there sink under the waves. Don't wait around on them!",
+	], Vector3(-2.5, 0, 18.5), Vector3(0.3, 0, -1).normalized(), 0.38)
+	add_sign("Captain Pinch rules the sand bar past this door. Find five stars to open it.", Vector3(8.5, 0, 18.8), Vector3.BACK)
+	add(Crab.make(Vector3(5, 0, 0), 3.4), Vector3(-9, 0, 15.5))
+	add(Crab.make(Vector3(0, 0, -4), 2.8, 0.4), Vector3(13.3, 0, 17))
+	add_sign("Crabs pinch! Jump on them and they pop into coins.", Vector3(-8.5, 0, 13), Vector3.BACK)
+	for at in [Vector3(-9, 0, 20), Vector3(1.5, 0, 20.3), Vector3(9.8, 0, 13.0)]:
+		tree(at, "pirate:palm-straight", 0.7)
+	for at in [Vector3(13.5, 0, 20.3), Vector3(-3.8, 0, 20.4), Vector3(13.4, 0, 12.6)]:
+		deco("rocks", at, at.x * 23.0, 1.8)
+	for at in [Vector3(-7, 0, 17), Vector3(3, 0, 13), Vector3(11, 0, 15.5)]:
+		deco("stones", at, at.z * 31.0, 1.5)
 
 
 # --- Lookout Islet, across the Skyway ----------------------------------------
