@@ -39,6 +39,7 @@ func build() -> void:
 	# The broken catwalk across the gust: it blows you east as you jump.
 	for z0 in [-22, -28, -34]:
 		ledge(-1, z0 - 4, 1, z0, 5.0, "snow")
+	add_sign("A gust blows across the catwalk. Lean into it as you jump!", Vector3(-2.2, 5, -20.6))
 	var gust := WindZone.make(Vector3(8, 4, 16), Vector3.RIGHT * 10.0)
 	add(gust, Vector3(0, 4.5, -30))
 	add_coin(Vector3(0, 6.3, -27))

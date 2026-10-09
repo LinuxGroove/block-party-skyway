@@ -119,3 +119,9 @@ func _physics_process(delta: float) -> void:
 			level.countdown.emit("", -1.0)
 		button.release()
 		timed_out.emit()
+
+
+## Leaving mid-countdown (a restart, a door) takes the clock away with it.
+func _exit_tree() -> void:
+	if is_running() and not held and label != "" and level:
+		level.countdown.emit("", -1.0)

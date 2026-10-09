@@ -27,7 +27,7 @@ func build() -> void:
 	_gantry()
 	_floor_marks()
 	press = add_boss(GearsBigPress.new(), Vector3(0, 0, 0)) as GearsBigPress
-	press.reach = SIZE - 3.0
+	press.reach = SIZE - 2.2
 	finish()
 
 
