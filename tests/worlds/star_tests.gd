@@ -31,6 +31,8 @@ func legs(course_id: String) -> Array:
 			return _blizzard_bluffs()
 		"haunted_heights":
 			return _haunted_heights()
+		"bounce_hollow":
+			return _bounce_hollow()
 	return []
 
 
@@ -574,3 +576,59 @@ static func _ghost_clear(play: Play, start: Vector3, from: float, to: float) -> 
 			t += 1.0 / 30.0
 		return true
 	return true
+
+
+# --- Bounce Hollow -----------------------------------------------------------
+
+## Where the bee that started at `start` will be in `secs` seconds.
+static func _bee_at(play: Play, start: Vector3, secs: float) -> Vector3:
+	var best: StarBouncer = null
+	for n in play.level.find_children("*", "StarBouncer", true, false):
+		var b := n as StarBouncer
+		if best == null or b._start.distance_to(start) < best._start.distance_to(start):
+			best = b
+	return best._start + best.offset_at(best._t + secs)
+
+
+## An aim for one jump that bounces off each bee in `bees` (their starting
+## spots) in turn, then comes down on `last`.
+static func _bounce_aim(bees: Array, last: Vector3) -> Callable:
+	var st := {"n": 0, "vy": 0.0}
+	return func(p: Play, s: float) -> Vector3:
+		var vy := p.hero.velocity.y
+		if vy > 11.5 and st.vy < 6.0:
+			st.n += 1
+		st.vy = vy
+		if st.n < bees.size():
+			return _bee_at(p, bees[st.n], s) + Vector3(0, 0.75, 0)
+		return last
+
+
+## Jump onto each bee as it comes into line and bounce over every gap,
+## wait for the zombies, the ghost and the spikes, bounce up the stair of
+## bees, and hop the planks to the last big bounce.
+func _bounce_hollow() -> Array:
+	var bees: Array = []
+	for b in BounceHollow.BEES:
+		bees.append(b[0])
+	var high := BounceHollow.HIGH
+	var out: Array = [
+		{"to": Vector3(0, 0, -2.6), "when": func(p): return absf(_bee_at(p, bees[0], 1.1).x) < 0.5},
+		{"to": Vector3(0, 0, -5.6), "jump": "jump", "aim": _bounce_aim([bees[0]], Vector3(0, 0, -17.2))},
+		{"to": Vector3(0, 0, -17.6), "jump": "jump", "aim": Vector3(0, 0, -20.6)},
+		{"to": Vector3(0, 0, -22.6), "when": func(p): return absf(_bee_at(p, bees[1], 1.1).x) < 0.5},
+		{"to": Vector3(0, 0, -25.6), "jump": "jump", "aim": _bounce_aim([bees[1]], Vector3(0, 0, -37.4))},
+		{"to": Vector3(0, 0, -37.8), "when": func(p): return _clear_run(p, Vector3(0, 0, -37.8), Vector3(0, 0, -47.2), 0.4)},
+		{"to": Vector3(0, 0, -47.2), "jump": "jump", "aim": _bounce_aim([bees[2], bees[3]], Vector3(0, high, -57.6))},
+		{"to": Vector3(0, high, -57.8), "when": func(p): return _clear_run(p, Vector3(0, high, -57.8), Vector3(0, high, -63.4), 0.5)},
+		{"to": Vector3(0, high, -62.6), "when": func(p): return absf(_bee_at(p, bees[4], 0.9).x) < 0.8},
+		{"to": Vector3(0, high, -63.6), "jump": "jump", "aim": _bounce_aim([bees[4], bees[5]], Vector3(0, high, -78.0))},
+		{"to": Vector3(0, high, -78.4), "when": func(p): return _clear_run(p, Vector3(0, high, -78.4), Vector3(0, high, -89.6), 0.4)},
+	]
+	var from := -89.6
+	for z in BounceHollow.PLANKS:
+		out.append({"to": Vector3(0, high, from), "jump": "jump", "aim": Vector3(0, high, z)})
+		from = z - 0.6
+	out.append({"to": Vector3(0, high, from), "jump": "jump", "aim": _bounce_aim([bees[6]], Vector3(0, BounceHollow.PATCH, -114.6))})
+	out.append({"to": Vector3(0, BounceHollow.PATCH, -118.4)})
+	return out
