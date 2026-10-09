@@ -25,6 +25,8 @@ func legs(course_id: String) -> Array:
 			return _cannon_crypts()
 		"sugar_gears":
 			return _sugar_gears()
+		"moon_ramparts":
+			return _moon_ramparts()
 	return []
 
 
@@ -440,5 +442,41 @@ func _sugar_gears() -> Array:
 			"jump": "jump", "aim": lift2 + Vector3.UP},
 		{"to": lift2, "when": func(p): return _lift_up(p, lift2), "jump": "jump", "aim": Vector3(0, 7.0, -92.4)},
 		{"to": SugarGears.CAKE + Vector3(0, 0, -2.0)},
+	])
+	return out
+
+
+# --- Moon Ramparts -----------------------------------------------------------
+
+## Hop up the towers, wait between the spinners along the rampart, hop the
+## planks, ride the spring up, cross the cannons' deck and long jump to the
+## flag tower, all in low gravity.
+func _moon_ramparts() -> Array:
+	var top := MoonRamparts.RAMPART_TOP
+	var deck := MoonRamparts.HIGH_DECK
+	var tw: Array = MoonRamparts.TOWERS
+	var out := [
+		{"to": Vector3(0, 0, -5.4), "jump": "jump", "aim": tw[0]},
+		{"to": Vector3(0.4, tw[0].y, -11.9), "jump": "jump", "aim": tw[1]},
+		{"to": Vector3(1.9, tw[1].y, -18.0), "jump": "jump", "aim": tw[2]},
+		{"to": Vector3(-0.5, top, -23.6), "jump": "jump", "aim": Vector3(0, top, -28.4)},
+	]
+	var stops := [-28.6, -35.0, -42.0, -49.4]
+	for i in stops.size() - 1:
+		var a := Vector3(0, top, stops[i])
+		var b := Vector3(0, top, stops[i + 1])
+		out.append({"to": a, "when": func(p): return _clear_run(p, a, b, 0.3)})
+	var from := -49.4
+	for z in MoonRamparts.PLANKS:
+		out.append({"to": Vector3(0, top, from), "jump": "jump", "aim": Vector3(0, top, z)})
+		from = z - 0.6
+	var spring: Vector3 = MoonRamparts.SPRING
+	out.append_array([
+		{"to": Vector3(0, top, from), "jump": "jump", "aim": Vector3(0, top, -74.4)},
+		{"to": spring, "until": func(p): return p.hero.velocity.y > 10.0},
+		{"to": Vector3(0, deck, -81.8), "stop": true, "until": func(p): return p.hero.is_on_floor() and p.hero.global_position.y > deck - 0.3},
+		{"to": Vector3(0, deck, -81.8), "when": func(p): return _clear_run(p, Vector3(0, deck, -81.8), Vector3(0, deck, -90.4), 0.3)},
+		{"to": Vector3(0, deck, -90.4), "jump": "long", "aim": MoonRamparts.FLAG_TOWER + Vector3(0, 0, 1.5)},
+		{"to": MoonRamparts.FLAG_TOWER + Vector3(0, 0, -1.6)},
 	])
 	return out
