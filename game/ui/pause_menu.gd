@@ -43,9 +43,9 @@ func _build() -> void:
 	if play.is_speedrun():
 		_col.add_child(LGUi.button("Start again", _restart, 460))
 		_col.add_child(LGCycler.make("Best run's ghost", SettingsPanel.ON_OFF, LGSettings.get_value("play", "ghost"), _set_value.bind("play", "ghost"), 460))
-	elif play.is_course():
+	elif play.is_course() or play.is_boss():
 		_col.add_child(LGUi.button("Back to the last flag", _to_flag, 460))
-		_col.add_child(LGUi.button("Leave the course", _leave_course, 460))
+		_col.add_child(LGUi.button("Leave the arena" if play.is_boss() else "Leave the course", _leave_course, 460))
 	else:
 		_col.add_child(LGUi.button("Back to the last flag", _to_flag, 460))
 	add_comfort(_col, 460)

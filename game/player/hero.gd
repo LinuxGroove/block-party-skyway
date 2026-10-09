@@ -55,6 +55,9 @@ const SAFE_TIME := 1.4
 const STEP_HEIGHT := 0.32
 ## Below this the hero has fallen off the world.
 const KILL_Y := -14.0
+## How much grip the hero has on ice (Level.ice()) to stop or turn, from 0
+## to 1.
+const ICE_GRIP := 0.12
 
 var input := HeroInput.new()
 var state := State.AIR
@@ -74,6 +77,14 @@ var jump_kind := ""
 var last_floor_y := 0.0
 ## Ticks of play, for tests and ghosts.
 var ticks := 0
+## Scales every pull of gravity (low gravity in space). Jumps keep their
+## speed, so they go higher and hang longer.
+var gravity_scale := 1.0
+## True while standing on ice.
+var on_ice := false
+## Pushes from things the hero is in (fans, wind, currents), as
+## accelerations by source; see add_force().
+var forces := {}
 
 var body: Node3D
 var rig: RigCharacter
@@ -143,6 +154,16 @@ func place(at: Vector3, face := Vector3.BACK) -> void:
 	_spin = 0.0
 	_update_body(0.0)
 	reset_physics_interpolation()
+
+
+## Pushes the hero with `accel` (m/s², any direction) until removed, for
+## fans, wind and currents. Each source keeps one force.
+func add_force(source: Object, accel: Vector3) -> void:
+	forces[source] = accel
+
+
+func remove_force(source: Object) -> void:
+	forces.erase(source)
 
 
 ## Freezes the controls for `seconds` (a star, a door, a conversation).
@@ -239,6 +260,9 @@ func step(delta: float) -> void:
 			_hurt(delta)
 		State.LOCKED:
 			_locked(delta)
+	if not forces.is_empty() and state in [State.GROUND, State.AIR, State.DIVE, State.HURT, State.WALL]:
+		for f in forces.values():
+			velocity += f * delta
 	var before := velocity
 	move_and_slide()
 	_after_move(before, delta)
@@ -267,10 +291,13 @@ func _ground(delta: float) -> void:
 		accel = SKID_DECEL
 	elif crouching and flat.length() > top:
 		accel = GROUND_DECEL * 0.35
+	if on_ice:
+		# Slow to get going on ice, and slower still to stop or turn.
+		accel *= ICE_GRIP if target.length() < 0.01 or flat.dot(target) < 0.0 else 0.35
 	flat = flat.move_toward(target, accel * delta)
 	velocity.x = flat.x
 	velocity.z = flat.z
-	velocity.y = minf(velocity.y, 0.0) - GRAVITY * delta * 0.1
+	velocity.y = minf(velocity.y, 0.0) - GRAVITY * gravity_scale * delta * 0.1
 	if flat.length() > 0.4:
 		_turn_toward(flat, 16.0, delta)
 	elif input.move.length() > 0.2:
@@ -314,7 +341,7 @@ func _wall(delta: float) -> void:
 	can_dive = true
 	velocity.x = -wall_normal.x * 0.5
 	velocity.z = -wall_normal.z * 0.5
-	velocity.y = maxf(velocity.y - GRAVITY * delta, -WALL_SLIDE_SPEED)
+	velocity.y = maxf(velocity.y - GRAVITY * gravity_scale * delta, -WALL_SLIDE_SPEED)
 	facing = Vector3(wall_normal.x, 0, wall_normal.z).normalized()
 	if _buffer > 0.0:
 		_buffer = 0.0
@@ -343,7 +370,7 @@ func _dive(delta: float) -> void:
 		velocity.x = turned.x
 		velocity.z = turned.z
 		facing = turned.normalized()
-	velocity.y = maxf(velocity.y - GRAVITY * delta, -MAX_FALL)
+	velocity.y = maxf(velocity.y - GRAVITY * gravity_scale * delta, -MAX_FALL)
 
 
 func _slide(delta: float) -> void:
@@ -474,7 +501,7 @@ func _fall(delta: float) -> void:
 		g = LONG_JUMP_GRAVITY
 	elif velocity.y < 0.0 or (_cut and jump_kind in ["jump", "double", "high", "rollout"]):
 		g = FALL_GRAVITY
-	velocity.y = maxf(velocity.y - g * delta, -MAX_FALL)
+	velocity.y = maxf(velocity.y - g * gravity_scale * delta, -MAX_FALL)
 
 
 func _turn_toward(dir: Vector3, rate: float, delta: float) -> void:
@@ -491,6 +518,7 @@ func _after_move(before: Vector3, delta: float) -> void:
 	var on_floor := is_on_floor()
 	if on_floor and is_on_wall() and state in [State.GROUND, State.SLIDE]:
 		_step_up(before, delta)
+	on_ice = false
 	if on_floor:
 		last_floor_y = global_position.y
 		_push_from_floor(delta)
@@ -575,12 +603,15 @@ func _land(fall_speed: float) -> void:
 	landed.emit(-fall_speed)
 
 
-## Conveyor belts carry whoever stands on them (they set a "push" meta).
+## Conveyor belts carry whoever stands on them (they set a "push" meta);
+## ice (an "ice" meta) is slippery.
 func _push_from_floor(delta: float) -> void:
 	for i in get_slide_collision_count():
 		var c := get_slide_collision(i)
 		if c.get_normal().y > 0.7:
 			var obj := c.get_collider()
+			if obj and obj.has_meta("ice"):
+				on_ice = true
 			if obj and obj.has_meta("push"):
 				var push: Vector3 = obj.get_meta("push")
 				global_position += push * delta

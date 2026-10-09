@@ -1,17 +1,23 @@
 class_name CourseDoor
 extends Node3D
-## A stone arch with a door into a course. Stand in front of it and press
-## Talk to go in.
+## A stone arch with a door into a course (or a boss's arena). Stand in
+## front of it and press Talk to go in. Coming back out, the hero arrives
+## in front of it.
 
 var level: Level
 var course_id := ""
 var facing := Vector3.BACK
+## For Level.arrival(): coming back from the course arrives here.
+var arrive_id: String:
+	get:
+		return course_id
 
 var _door: Node3D
 
 
 func _ready() -> void:
 	add_to_group("talker")
+	add_to_group("arrival")
 	var turn := atan2(facing.x, facing.z)
 	var side := facing.cross(Vector3.UP).normalized()
 	# The arch: two stone pillars and a lintel, from the kit's blocks.
@@ -28,12 +34,16 @@ func _ready() -> void:
 	_door = Kit.model("door-rotate-large", 1.9)
 	_door.rotation.y = turn
 	add_child(_door)
-	var sign := Kit.model("flag", 1.4)
+	var sign := Kit.model(_flag_model(), 1.4)
 	sign.position = side * 1.9 + facing * 0.3
 	add_child(sign)
 	if level:
 		level.solid(global_position + side * 1.2 + Vector3(-0.3, 0, -0.3), global_position + side * 1.2 + Vector3(0.3, 2.6, 0.3))
 		level.solid(global_position - side * 1.2 + Vector3(-0.3, 0, -0.3), global_position - side * 1.2 + Vector3(0.3, 2.6, 0.3))
+
+
+func _flag_model() -> String:
+	return "flag"
 
 
 func can_talk() -> bool:

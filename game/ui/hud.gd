@@ -19,6 +19,9 @@ var _hearts: HBoxContainer
 var _clock_box: PanelContainer
 var _clock: Label
 var _clock_sub: Label
+var _boss: PanelContainer
+var _boss_name: Label
+var _boss_pips: HBoxContainer
 var _challenge: PanelContainer
 var _challenge_label: Label
 var _prompts: HBoxContainer
@@ -47,6 +50,7 @@ func _ready() -> void:
 	_build_counts()
 	_build_hearts()
 	_build_clock()
+	_build_boss()
 	_build_prompts()
 	_build_middle()
 	_build_speech()
@@ -181,6 +185,29 @@ func _build_clock() -> void:
 	col.add_child(_clock_sub)
 
 
+## A boss's name and health, top middle, in its arena.
+func _build_boss() -> void:
+	var holder := CenterContainer.new()
+	holder.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP, Control.PRESET_MODE_MINSIZE)
+	holder.position.y = 14
+	holder.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(holder)
+	_boss = pill(Color(0.3, 0.08, 0.12, 0.85))
+	_boss.visible = false
+	holder.add_child(_boss)
+	var col := VBoxContainer.new()
+	col.alignment = BoxContainer.ALIGNMENT_CENTER
+	_boss.add_child(col)
+	_boss_name = text("", 26, Color("ffd23f"))
+	_boss_name.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	col.add_child(_boss_name)
+	_boss_pips = HBoxContainer.new()
+	_boss_pips.alignment = BoxContainer.ALIGNMENT_CENTER
+	_boss_pips.add_theme_constant_override("separation", 4)
+	col.add_child(_boss_pips)
+
+
 func _build_prompts() -> void:
 	var box := _corner(Control.PRESET_BOTTOM_RIGHT, Vector2(-18, -16))
 	_prompts = HBoxContainer.new()
@@ -303,6 +330,19 @@ func set_clock(msec: int, sub: String) -> void:
 	_clock.text = Courses.time_text(msec)
 	_clock_sub.text = sub.to_upper()
 	_clock_sub.visible = sub != ""
+
+
+## Shows a boss's health; max_health 0 hides it.
+func set_boss(boss_name: String, health: int, max_health: int) -> void:
+	_boss.visible = max_health > 0
+	_boss_name.text = boss_name.to_upper()
+	for c in _boss_pips.get_children():
+		_boss_pips.remove_child(c)
+		c.queue_free()
+	for i in max_health:
+		var r := icon("", 30)
+		r.texture = _heart_tex if i < health else _heart_empty
+		_boss_pips.add_child(r)
 
 
 func set_challenge(label: String, seconds: float) -> void:

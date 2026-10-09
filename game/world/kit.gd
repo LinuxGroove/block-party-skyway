@@ -1,6 +1,8 @@
 class_name Kit
 extends RefCounted
-## Kenney's Platformer Kit and Cube Pets models, by name.
+## Kenney's models, by name: the Platformer Kit's by their own names
+## ("block-grass", "coin-gold"), Cube Pets' by theirs ("animal-crab"), and
+## each world's theme kit with a prefix ("pirate:ship-large").
 ##
 ## Levels draw the many repeated pieces (blocks, fences, flowers) through
 ## MultiMeshes built from each model's meshes, so an island of hundreds of
@@ -9,6 +11,16 @@ extends RefCounted
 
 const PLATFORMER := "res://assets/kenney/platformer-kit/"
 const PETS := "res://assets/kenney/cube-pets/"
+## Theme kits by prefix.
+const KITS := {
+	"holiday": "res://assets/kenney/holiday-kit/",
+	"pirate": "res://assets/kenney/pirate-kit/",
+	"grave": "res://assets/kenney/graveyard-kit/",
+	"food": "res://assets/kenney/food-kit/",
+	"factory": "res://assets/kenney/factory-kit/",
+	"castle": "res://assets/kenney/castle-kit/",
+	"station": "res://assets/kenney/space-station-kit/",
+}
 
 ## Physics layers.
 const LAYER_WORLD := 1
@@ -19,6 +31,9 @@ static var _meshes := {}
 
 
 static func path(model_name: String) -> String:
+	var colon := model_name.find(":")
+	if colon > 0:
+		return KITS[model_name.left(colon)] + model_name.substr(colon + 1) + ".glb"
 	if model_name.begins_with("animal-"):
 		return PETS + model_name + ".glb"
 	return PLATFORMER + model_name + ".glb"

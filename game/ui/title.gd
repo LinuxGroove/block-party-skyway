@@ -17,6 +17,9 @@ var _col: VBoxContainer
 var _status: Label
 var _about_scroll: ScrollContainer
 var _leaving := false
+## The world whose courses the Speedrun page shows.
+var _speedrun_world := "sunny"
+var _speedrun_list: VBoxContainer
 
 
 func _ready() -> void:
@@ -200,10 +203,32 @@ func _show_speedrun() -> void:
 	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_col.add_child(l)
-	for id in Courses.ids():
-		_col.add_child(_course_button(id))
+	var options := []
+	for w in Worlds.ORDER:
+		if not Courses.of_world(w).is_empty():
+			options.append([w, "%d. %s" % [Worlds.number(w), Worlds.world_name(w)]])
+	if not Courses.of_world(_speedrun_world).size():
+		_speedrun_world = "sunny"
+	_col.add_child(LGCycler.make("World", options, _speedrun_world, _set_speedrun_world, 520))
+	_speedrun_list = VBoxContainer.new()
+	_speedrun_list.add_theme_constant_override("separation", 10)
+	_col.add_child(_speedrun_list)
+	_fill_speedrun_list()
 	_col.add_child(LGUi.button("Back", _show_main))
 	LGUi.focus_first(_col)
+
+
+func _set_speedrun_world(w: Variant) -> void:
+	_speedrun_world = str(w)
+	_fill_speedrun_list()
+
+
+func _fill_speedrun_list() -> void:
+	for c in _speedrun_list.get_children():
+		_speedrun_list.remove_child(c)
+		c.queue_free()
+	for id in Courses.of_world(_speedrun_world):
+		_speedrun_list.add_child(_course_button(id))
 
 
 func _course_button(id: String) -> Button:
@@ -298,7 +323,9 @@ The LinuxGroove team
 Kenney (kenney.nl)
 Released under CC0. Thank you, Kenney!
 
-Platformer Kit, Cube Pets, New Platformer Pack,
+Platformer Kit, Cube Pets, Holiday Kit, Pirate Kit,
+Graveyard Kit, Food Kit, Factory Kit, Castle Kit,
+Space Station Kit, New Platformer Pack,
 Input Prompts, UI Pack - Adventure, Kenney Fonts,
 Music Loops, Music Jingles, Voiceover Pack,
 Impact Sounds, Interface Sounds

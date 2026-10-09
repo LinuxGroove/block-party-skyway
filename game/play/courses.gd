@@ -4,26 +4,39 @@ extends RefCounted
 ## star in Adventure and a time trial in Speedrun.
 
 ## Medal times in milliseconds: bronze, silver, gold and Patrol (the hidden
-## one, the developers' own best).
-const LIST := {
-	"sawmill": {
-		"name": "Saw Mill Sprint",
-		"world": "sunny",
-		"star": "sunny/sawmill",
-		"gem": "sunny/gem_sawmill",
-		"medals": [25000, 18000, 14500, 12600],
-	},
-}
+## one, the developers' own best). Each world lists its own courses; all()
+## gathers them, with "world" added, in world order.
+static var _list := {}
 const MEDALS := ["", "Bronze", "Silver", "Gold", "Patrol"]
 const MEDAL_COLORS := [Color.WHITE, Color("d68a4c"), Color("c9d3dd"), Color("ffd23f"), Color("7fd6ff")]
 
 
+static func all() -> Dictionary:
+	if _list.is_empty():
+		for w in Worlds.ORDER:
+			var courses: Dictionary = Worlds.get_def(w).get("courses", {})
+			for id in courses:
+				var def: Dictionary = (courses[id] as Dictionary).duplicate()
+				def.world = w
+				_list[id] = def
+	return _list
+
+
 static func ids() -> Array:
-	return LIST.keys()
+	return all().keys()
+
+
+static func has(id: String) -> bool:
+	return all().has(id)
 
 
 static func get_def(id: String) -> Dictionary:
-	return LIST.get(id, {})
+	return all().get(id, {})
+
+
+## The courses of one world, in door order.
+static func of_world(world: String) -> Array:
+	return (Worlds.get_def(world).get("courses", {}) as Dictionary).keys()
 
 
 static func title(id: String) -> String:

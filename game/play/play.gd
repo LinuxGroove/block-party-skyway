@@ -68,9 +68,17 @@ func is_speedrun() -> bool:
 	return mode == "speedrun"
 
 
-## True for a course (as opposed to an island).
+## True for a course (as opposed to an island or a boss's arena).
 func is_course() -> bool:
-	return Courses.LIST.has(level_id)
+	return Courses.has(level_id)
+
+
+func is_boss() -> bool:
+	return Worlds.is_boss(level_id)
+
+
+func world() -> String:
+	return level.world if level else Worlds.world_of(level_id)
 
 
 func _ready() -> void:
@@ -99,9 +107,10 @@ func _ready() -> void:
 	_load_level()
 	var at := level.spawn
 	var face := level.spawn_facing
-	if arrive.has("position"):
-		at = arrive.position
-		face = arrive.get("facing", face)
+	var spot := level.arrival(arrive)
+	if spot.has("position"):
+		at = spot.position
+		face = spot.get("facing", face)
 	respawn_at = at
 	respawn_facing = face
 	hero.place(at, face)
@@ -111,7 +120,7 @@ func _ready() -> void:
 	if is_speedrun():
 		_start_countdown(3.0)
 	elif not is_course():
-		hud.banner(level.title, "World 1", 2.0)
+		hud.banner(level.title, "World %d" % Worlds.number(world()), 2.0)
 
 
 func _load_level() -> void:
@@ -122,6 +131,7 @@ func _load_level() -> void:
 	level.found_stars = Progress.stars.duplicate()
 	level.found_gems = Progress.gems.duplicate()
 	level.hero = hero
+	hero.gravity_scale = level.gravity_scale
 	add_child(level)
 	move_child(level, 0)
 	level.build()
@@ -136,8 +146,14 @@ func _load_level() -> void:
 	level.finished.connect(_on_finished)
 	level.message.connect(_on_message)
 	level.speech.connect(_on_speech)
-	if level.has_signal("countdown"):
-		level.connect("countdown", _on_challenge)
+	level.countdown.connect(_on_challenge)
+	level.fell.connect(_fell)
+	level.travel.connect(_on_travel)
+	if level is BossArena:
+		(level as BossArena).boss_changed.connect(_on_boss_changed)
+		var arena := level as BossArena
+		if arena.boss:
+			hud.set_boss(arena.boss.boss_name, arena.boss.health, arena.boss.max_health)
 	var base: Array = level.camera_base
 	cam.set_base(base[0], base[1], base[2], base[3])
 	cam.zones.clear()
@@ -298,11 +314,17 @@ func _on_star(id: String) -> void:
 	hero.lock(1.8)
 	hero.rig.play_once("emote-yes")
 	LGAudio.play_sfx(STAR_JINGLE, -2.0)
-	hud.banner("Star found!" if fresh else "Found it again", Worlds.star_name(id))
+	var sub := Worlds.star_name(id)
+	var next := Worlds.neighbour(world(), 1)
+	if is_boss() and next != "" and Worlds.is_built(next):
+		sub = "The Skyway to %s is back!" % Worlds.world_name(next)
+	elif is_boss() and next == "":
+		sub = "The Sky Isles' stars are free!"
+	hud.banner("Star found!" if fresh else "Found it again", sub, 3.0 if is_boss() else 2.0)
 	_refresh_hud()
-	if is_course() and not is_speedrun():
+	if (is_course() or is_boss()) and not is_speedrun():
 		_leaving = true
-		get_tree().create_timer(2.6).timeout.connect(back_to_island)
+		get_tree().create_timer(3.4 if is_boss() else 2.6).timeout.connect(back_to_island)
 
 
 func _on_coins(n: int) -> void:
@@ -313,10 +335,11 @@ func _on_coins(n: int) -> void:
 func _on_gem(id: String) -> void:
 	var fresh := Progress.add_gem(id)
 	var have := 0
-	for g in Worlds.gem_ids("sunny"):
+	var gems := Worlds.gem_ids(world())
+	for g in gems:
 		if Progress.has_gem(g):
 			have += 1
-	hud.banner("Hidden gem found!" if fresh else "Found it again", "%d of %d in Sunny Isles" % [have, Worlds.gem_ids("sunny").size()], 2.0)
+	hud.banner("Hidden gem found!" if fresh else "Found it again", "%d of %d in %s" % [have, gems.size(), Worlds.world_name(world())], 2.0)
 	_refresh_hud()
 
 
@@ -360,7 +383,7 @@ func _on_checkpoint(at: Vector3, facing: Vector3) -> void:
 	respawn_at = at
 	respawn_facing = facing
 	hearts = MAX_HEARTS
-	if not is_course():
+	if not is_course() and not is_boss():
 		Progress.island_spot = {"level": level_id, "position": at, "facing": facing}
 	Progress.save()
 	_refresh_hud()
@@ -371,10 +394,22 @@ func _on_course_door(course_id: String) -> void:
 		return
 	_leaving = true
 	hero.lock(9999.0)
-	Progress.find_course(course_id)
-	Progress.island_spot = {"level": level_id, "position": SunnyIsle.DOOR_SPOT, "facing": Vector3.BACK}
+	if Courses.has(course_id):
+		Progress.find_course(course_id)
+	Progress.island_spot = {"level": level_id, "door": course_id}
 	Progress.save()
 	Play.open(course_id, "adventure")
+
+
+## Through a Skyway gate to another world's island.
+func _on_travel(id: String, p_arrive: Dictionary) -> void:
+	if _leaving:
+		return
+	_leaving = true
+	hero.lock(9999.0)
+	Progress.island_spot = {"level": id, "door": str(p_arrive.get("door", ""))}
+	Progress.save()
+	Play.open(id, "adventure", p_arrive)
 
 
 func _on_finished() -> void:
@@ -384,12 +419,13 @@ func _on_finished() -> void:
 		level.collect_star(str(Courses.get_def(level_id).star))
 
 
-## From a course back out of its door on the island.
+## From a course or the boss's arena back out of its door on the island.
 func back_to_island() -> void:
 	_leaving = true
 	Progress.save()
-	var world: String = Courses.get_def(level_id).get("world", "sunny")
-	Play.open(str(Worlds.get_def(world).island), "adventure", {"position": SunnyIsle.DOOR_SPOT, "facing": Vector3.BACK})
+	var island := str(Worlds.get_def(world()).island)
+	Progress.island_spot = {"level": island, "door": level_id}
+	Play.open(island, "adventure", {"door": level_id})
 
 
 func quit_to_title() -> void:
@@ -405,6 +441,10 @@ func _on_message(text: String) -> void:
 
 func _on_challenge(label: String, seconds: float) -> void:
 	hud.set_challenge(label, seconds)
+
+
+func _on_boss_changed(boss_name: String, health: int, max_health: int) -> void:
+	hud.set_boss(boss_name, health, max_health)
 
 
 func _on_speech(speaker: String, lines: Array, done: Callable) -> void:
@@ -438,22 +478,23 @@ func speech_open() -> bool:
 
 
 func _refresh_hud() -> void:
-	var stars := Progress.star_count("sunny")
+	var w := world()
+	var stars := Progress.star_count(w)
 	var gems := 0
-	for g in Worlds.gem_ids("sunny"):
+	for g in Worlds.gem_ids(w):
 		if Progress.has_gem(g):
 			gems += 1
-	hud.set_counts(stars, Worlds.total_stars(), Progress.coins, gems, Worlds.total_gems())
+	hud.set_counts(stars, Worlds.star_ids(w).size(), Progress.coins, gems, Worlds.gem_ids(w).size())
 	hud.set_hearts(hearts, MAX_HEARTS)
 	if is_speedrun():
 		var best := Progress.best_time(level_id)
 		hud.set_place(level.title, "Speedrun  ·  best %s" % Courses.time_text(best) if best > 0 else "Speedrun  ·  no time yet")
 		hud.set_clock(run_msec(), _clock_sub())
-	elif is_course():
-		hud.set_place(level.title, "Adventure  ·  Sunny Isles")
-	elif level.has_method("secrets_left"):
-		var left: int = level.secrets_left()
-		hud.set_place("World 1  ·  " + level.title, "Adventure  ·  %d secrets left on this island" % left if left > 0 else "Adventure  ·  every secret found")
+	elif is_course() or is_boss():
+		hud.set_place(level.title, "Adventure  ·  " + Worlds.world_name(w))
+	elif level is Island:
+		var left: int = (level as Island).secrets_left()
+		hud.set_place("World %d  ·  %s" % [Worlds.number(w), level.title], "Adventure  ·  %d secrets left in this world" % left if left > 0 else "Adventure  ·  every secret found")
 
 
 # --- Sounds ------------------------------------------------------------------

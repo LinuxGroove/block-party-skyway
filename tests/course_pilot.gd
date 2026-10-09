@@ -181,8 +181,8 @@ func _aim_y(aim, play: Play) -> float:
 
 ## Seconds until the hero falls back to height `y`, from the jump's gravity.
 static func _time_to_land(h: Hero, kind: String, y: float) -> float:
-	var g_up := Hero.LONG_JUMP_GRAVITY if kind == "long" else Hero.GRAVITY
-	var g_down := Hero.LONG_JUMP_GRAVITY if kind == "long" else Hero.FALL_GRAVITY
+	var g_up := (Hero.LONG_JUMP_GRAVITY if kind == "long" else Hero.GRAVITY) * h.gravity_scale
+	var g_down := (Hero.LONG_JUMP_GRAVITY if kind == "long" else Hero.FALL_GRAVITY) * h.gravity_scale
 	var vy := h.velocity.y
 	var t := 0.0
 	var apex := h.global_position.y

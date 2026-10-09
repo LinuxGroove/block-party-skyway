@@ -10,6 +10,9 @@ extends Node
 ##   stars=n    found a few stars first (the Skyway opens at 2)
 ##   hero=0..4  which astronaut
 ##   wait=2.5   seconds before the shot
+## Or every level of every built world (or of one), as JPEGs in
+## <dir>/<world>/<level>.jpg, plus any extra views a level lists in shots():
+##   godot --path . --resolution 1280x720 tools/screenshot.tscn -- --all=docs/screenshots [world=frosty]
 ## Uses its own saves (user://screenshot-progress.cfg).
 
 func _ready() -> void:
@@ -31,8 +34,13 @@ func _ready() -> void:
 	LGSettings.set_value("player", "hero", int(opts.get("hero", 0)), false)
 	Progress.use_path("user://screenshot-progress.cfg", "user://screenshot-ghosts/")
 	Progress.wipe()
-	Progress.find_course("sawmill")
-	var stars := Worlds.star_ids("sunny")
+	for id in Courses.ids():
+		Progress.find_course(id)
+	if out.begins_with("--all="):
+		await _all(out.trim_prefix("--all="), str(opts.get("world", "")), float(opts.get("wait", 2.5)))
+		return
+	var shot_level := str(opts.get("course", opts.get("adventure", opts.get("play", "sunny"))))
+	var stars := Worlds.star_ids(Worlds.world_of(shot_level))
 	for i in mini(int(opts.get("stars", 0)), stars.size()):
 		Progress.add_star(stars[i])
 	if opts.has("ghost"):
@@ -88,6 +96,43 @@ func _ready() -> void:
 		play.results.show_result(level, 40870, 41230, true)
 	await get_tree().create_timer(0.8).timeout
 	_save(out)
+
+
+## Every level of the built worlds (or one world), one JPEG per view.
+func _all(dir: String, only_world: String, wait: float) -> void:
+	var root := dir if dir.begins_with("/") else ProjectSettings.globalize_path("res://").path_join(dir)
+	# Scene changes replace the current scene; this one stays to drive them.
+	get_tree().current_scene = null
+	for w in Worlds.built():
+		if only_world != "" and w != only_world:
+			continue
+		# The worlds before are done, so the way back is open.
+		Progress.wipe()
+		for i in Worlds.ORDER.find(w):
+			Progress.add_star(str(Worlds.boss_def(Worlds.ORDER[i]).star))
+		for id in Courses.ids():
+			Progress.find_course(id)
+		DirAccess.make_dir_recursive_absolute(root.path_join(w))
+		for id in Levels.of_world(w):
+			var probe := Levels.make(id)
+			var views: Array = probe.shots() if probe.has_method("shots") else []
+			probe.free()
+			views.push_front({"name": ""})
+			for v in views:
+				var arrive := {}
+				if v.has("at"):
+					arrive = {"position": v.at, "facing": v.get("face", Vector3.FORWARD)}
+				Play.open(id, "adventure", arrive)
+				await LGScenes.scene_changed
+				var play: Play = get_tree().current_scene
+				if v.has("stick"):
+					play.cam.stick_override = v.stick
+				await get_tree().create_timer(wait).timeout
+				await RenderingServer.frame_post_draw
+				var file: String = id + ("-" + str(v.name) if str(v.name) != "" else "") + ".jpg"
+				get_viewport().get_texture().get_image().save_jpg(root.path_join(w).path_join(file), 0.85)
+				print("Saved ", w, "/", file)
+	get_tree().quit()
 
 
 func _fake_ghost() -> Ghost:

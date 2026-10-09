@@ -1,25 +1,37 @@
 extends Node
 ## Headless tests: run with
 ##   godot --headless --path . tests/run_tests.tscn
-## Add `-- --games=N` to run Saw Mill Sprint N times with the course pilot
-## (default 1; the second run races the first one's ghost), or
-## `-- --only=_test_island` for one test. Prints the pilot's time, which the
-## medal times are set from. Exits non-zero on failure.
+## Options after `--`:
+##   --games=N           run each course N times in Speedrun (default 1; the
+##                       second run races the first one's ghost)
+##   --world=frosty      only the data checks and one world's tests
+##   --course=sawmill    only one course's pilot runs
+##   --only=_test_moves  one test of this file
+## Each world's island and boss tests, and the course pilot's legs through
+## its courses, live in tests/worlds/<world>_tests.gd. Prints the pilot's
+## time on each course, which the medal times are set from. Exits non-zero
+## on failure.
 
 const CoursePilot := preload("res://tests/course_pilot.gd")
 
 var failures := 0
 var checks := 0
+var games := 1
 
 
 func _ready() -> void:
-	var games := 1
 	var only := ""
+	var only_world := ""
+	var only_course := ""
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--games="):
 			games = maxi(1, arg.substr(8).to_int())
 		elif arg.begins_with("--only="):
 			only = arg.substr(7)
+		elif arg.begins_with("--world="):
+			only_world = arg.substr(8)
+		elif arg.begins_with("--course="):
+			only_course = arg.substr(9)
 	LGSettings.register_defaults(GameConfig.SETTING_DEFAULTS)
 	LGTheme.apply(get_tree().root)
 	LGInput.register_actions(GameConfig.ACTIONS)
@@ -28,18 +40,25 @@ func _ready() -> void:
 	Progress.wipe()
 	if only != "":
 		await call(only)
-		print("\n%d checks, %d failed" % [checks, failures])
-		get_tree().quit(1 if failures > 0 else 0)
-		return
-	for t in ["_test_data", "_test_medals", "_test_progress", "_test_ghost"]:
-		printerr("- ", t)
-		call(t)
-	for t in ["_test_moves", "_test_wall_climb", "_test_menus", "_test_island", "_test_course_adventure"]:
-		printerr("- ", t)
-		await call(t)
-	for i in games:
-		printerr("- _test_speedrun %d" % (i + 1))
-		await _test_speedrun(i)
+	elif only_course != "":
+		var w := str(Courses.get_def(only_course).get("world", ""))
+		check(w != "", "%s is a course" % only_course)
+		if w != "":
+			await _test_course(_world_tests(w), only_course)
+	elif only_world != "":
+		_test_data()
+		_test_world_data(only_world)
+		await _test_world(only_world)
+	else:
+		for t in ["_test_data", "_test_medals", "_test_progress", "_test_ghost"]:
+			printerr("- ", t)
+			call(t)
+		for t in ["_test_moves", "_test_wall_climb", "_test_things", "_test_menus", "_test_skyway"]:
+			printerr("- ", t)
+			await call(t)
+		for w in Worlds.built():
+			_test_world_data(w)
+			await _test_world(w)
 	Progress.wipe()
 	print("\n%d checks, %d failed" % [checks, failures])
 	get_tree().quit(1 if failures > 0 else 0)
@@ -95,23 +114,53 @@ func _free(n: Node) -> void:
 
 # --- Data --------------------------------------------------------------------
 
-## Every star and gem the worlds list is in a level, and nothing else is.
+## The world list hangs together: every world has data, every course a
+## level and a world, and level ids are unique.
 func _test_data() -> void:
-	var stars := {}
-	var gems := {}
+	check(Worlds.ORDER.size() == 8, "eight worlds")
+	var seen := {}
+	for w in Worlds.ORDER:
+		var def := Worlds.get_def(w)
+		check(not def.is_empty() and str(def.get("name", "")) != "", "%s has data" % w)
+		check(def.has("boss") and def.boss.has("id") and def.boss.has("star"), "%s has a boss" % w)
+		for id in (def.get("levels", {}) as Dictionary):
+			check(not seen.has(id), "level id %s is used once" % id)
+			seen[id] = true
+			check(ResourceLoader.exists(str(def.levels[id])), "%s's script exists" % id)
+	check(Worlds.built().has("sunny"), "Sunny Isles is built")
 	for id in Courses.ids():
 		var def := Courses.get_def(id)
-		stars[def.star] = true
 		check(Worlds.star_ids(def.world).has(def.star), "%s's star is in its world" % id)
 		check(Worlds.gem_ids(def.world).has(def.gem), "%s's gem is in its world" % id)
-		check(Levels.make(id, "adventure") != null, "%s has a level" % id)
-	# Pebble's chicks and the silver rush hand out their stars when done.
-	stars["sunny/chicks"] = true
-	stars["sunny/silver"] = true
-	for id in ["sunny", "sawmill"]:
+		check(Worlds.level_path(id) != "", "%s has a level" % id)
+
+
+## Every star and gem a world lists is in one of its levels (or handed out
+## by one), and nothing else is; the island has a door for every course and
+## the boss, and gates to the worlds either side. Courses build for
+## Speedrun without the Adventure extras.
+func _test_world_data(w: String) -> void:
+	printerr("- data: ", w)
+	var def := Worlds.get_def(w)
+	var stars := {}
+	var gems := {}
+	for id in def.get("given", []):
+		stars[id] = true
+	var boss: Dictionary = def.boss
+	if (def.levels as Dictionary).has(boss.id):
+		stars[boss.star] = true
+	# A course's flag gives its star.
+	for c in Courses.of_world(w):
+		if (def.levels as Dictionary).has(c):
+			stars[Courses.get_def(c).star] = true
+	for id in Levels.of_world(w):
 		var level := Levels.make(id, "adventure")
+		check(level != null, "%s makes a level" % id)
+		if level == null:
+			continue
 		add_child(level)
 		level.build()
+		check(level.title != "", "%s has a title" % id)
 		for n in level.find_children("*", "Pickup", true, false):
 			var p := n as Pickup
 			if p.kind == "star":
@@ -124,24 +173,41 @@ func _test_data() -> void:
 				stars[parts[1]] = true
 			elif parts[0] == "gem":
 				gems[parts[1]] = true
+		if id == def.island:
+			check(level is Island, "%s's island is an Island" % w)
+			var doors := {}
+			for d in level.find_children("*", "CourseDoor", true, false):
+				doors[(d as CourseDoor).course_id] = d
+			for c in Courses.of_world(w):
+				check(doors.has(c), "%s has a door to %s" % [id, c])
+			if (def.levels as Dictionary).has(boss.id):
+				check(doors.has(boss.id) and doors[boss.id] is BossDoor, "%s has the boss door" % id)
+			var gates := {}
+			for g in level.find_children("*", "SkywayGate", true, false):
+				gates[(g as SkywayGate).to_world] = true
+			for step in [-1, 1]:
+				var other := Worlds.neighbour(w, step)
+				if other != "":
+					check(gates.has(other), "%s has a Skyway gate to %s" % [id, other])
+		elif Courses.has(id):
+			var course := Levels.make(id, "speedrun")
+			add_child(course)
+			course.build()
+			check(course.find_children("*", "Pickup", true, false).is_empty(), "speedrun %s has no pickups" % id)
+			check(course.find_children("*", "Checkpoint", true, false).is_empty(), "speedrun %s has no checkpoints" % id)
+			check(course.find_children("*", "FinishFlag", true, false).size() == 1, "%s has one finish flag" % id)
+			course.free()
+		elif id == boss.id:
+			check(level is BossArena, "%s is a BossArena" % id)
 		level.free()
-	var want_stars := Worlds.star_ids("sunny")
-	var want_gems := Worlds.gem_ids("sunny")
-	check(stars.size() == want_stars.size(), "Sunny Isles places %d stars (has %d)" % [want_stars.size(), stars.size()])
+	var want_stars := Worlds.star_ids(w)
+	var want_gems := Worlds.gem_ids(w)
+	check(stars.size() == want_stars.size(), "%s places %d stars (has %d: %s)" % [w, want_stars.size(), stars.size(), stars.keys()])
 	for id in want_stars:
 		check(stars.has(id), "star %s is placed" % id)
-	check(gems.size() == want_gems.size(), "Sunny Isles hides %d gems (has %d)" % [want_gems.size(), gems.size()])
+	check(gems.size() == want_gems.size(), "%s hides %d gems (has %d)" % [w, want_gems.size(), gems.size()])
 	for id in want_gems:
 		check(gems.has(id), "gem %s is hidden" % id)
-	check(Worlds.total_stars() == 6, "six stars so far")
-	# Speedrun builds without the Adventure extras.
-	var course := Levels.make("sawmill", "speedrun")
-	add_child(course)
-	course.build()
-	check(course.find_children("*", "Pickup", true, false).is_empty(), "a speedrun course has no pickups")
-	check(course.find_children("*", "Checkpoint", true, false).is_empty(), "a speedrun course has no checkpoints")
-	check(course.find_children("*", "FinishFlag", true, false).size() == 1, "the course has one finish flag")
-	course.free()
 
 
 func _test_medals() -> void:
@@ -365,6 +431,109 @@ class FakePlay extends Play:
 		pass
 
 
+# --- Things in the worlds ----------------------------------------------------
+
+## Ice, low gravity, wind, falling platforms, launchers, critters, spinners,
+## crushers, water and a boss, each tried once on a test ground.
+func _test_things() -> void:
+	_fast(true)
+	var made: Array = await _make_ground()
+	var level: Level = made[0]
+	var h: Hero = made[1]
+	var hurts := [0]
+	var falls := [0]
+	level.hurt.connect(func(_f): hurts[0] += 1)
+	level.fell.connect(func(): falls[0] += 1)
+	# Ice: let go of the stick at a run and the hero keeps sliding.
+	level.ice(-20, 10, -10, 20, 0.3)
+	h.place(Vector3(-15, 0.35, 19), Vector3.FORWARD)
+	await _ticks(4)
+	await _drive(h, 50, func(inp, _i): inp.move = Vector3.FORWARD; inp.run = true)
+	check(h.on_ice, "standing on ice is noticed")
+	await _drive(h, 20, func(inp, _i): pass)
+	check(h.horizontal_speed() > 3.0, "the hero slides on ice (%.2f)" % h.horizontal_speed())
+	# Low gravity: the same jump goes much higher.
+	h.place(Vector3(0, 0.05, 0), Vector3.FORWARD)
+	h.gravity_scale = 0.5
+	await _ticks(4)
+	var r: Array = await _measure(h, func(inp, i): inp.jump = i == 0; inp.jump_held = true, 400)
+	check(r[0] > 3.0, "low gravity jumps higher (%.2f)" % r[0])
+	h.gravity_scale = 1.0
+	# Wind: an updraft lifts the hero.
+	level.add(WindZone.make(Vector3(2, 8, 2), Vector3.UP * 45.0), Vector3(-5, 0, 0))
+	h.place(Vector3(-5, 0.05, 0), Vector3.FORWARD)
+	await _ticks(60)
+	check(h.global_position.y > 2.0, "an updraft lifts the hero (%.2f)" % h.global_position.y)
+	h.forces.clear()
+	# A falling platform drops after being stood on, and comes back.
+	var fp := level.add(FallingPlatform.make(), Vector3(5, 3, 8)) as FallingPlatform
+	h.place(Vector3(5, 3.05, 8), Vector3.FORWARD)
+	await _ticks(90)
+	check(fp.position.y < 2.0, "a falling platform falls when stood on (%.2f)" % fp.position.y)
+	fp.queue_free()
+	h.place(Vector3(0, 0.05, 0), Vector3.FORWARD)
+	await _ticks(30)
+	# A launcher's shot hurts.
+	hurts[0] = 0
+	h.safe_time = 0.0
+	level.add(Launcher.make("pirate:cannon", Vector3.BACK, 0.5), Vector3(0, 0, -6))
+	await _until(func(): return hurts[0] > 0, 3.0)
+	check(hurts[0] > 0, "a cannonball hurts")
+	for n in level.find_children("*", "Launcher", true, false):
+		n.queue_free()
+	await _ticks(60)
+	# Critters: land on one and it pops; walk into a chaser and it hurts.
+	var c := level.add(Critter.make("animal-bee", Vector3.ZERO), Vector3(15, 0, 15)) as Critter
+	h.place(Vector3(15, 2.5, 15), Vector3.FORWARD)
+	await _until(func(): return c.defeated, 2.0)
+	check(c.defeated, "landing on a critter beats it")
+	hurts[0] = 0
+	await _ticks(90)
+	h.safe_time = 0.0
+	var chaser := level.add(Critter.chaser("grave:character-zombie", 6.0, 3.0), Vector3(20, 0, 20)) as Critter
+	h.place(Vector3(17, 0.05, 20), Vector3.FORWARD)
+	await _until(func(): return hurts[0] > 0, 3.0)
+	check(hurts[0] > 0 and not chaser.defeated, "a chaser comes and bites")
+	chaser.queue_free()
+	await _ticks(90)
+	# A spinner's arm hurts.
+	hurts[0] = 0
+	h.safe_time = 0.0
+	level.add(Spinner.make(3, 120.0), Vector3(-15, 0, -15))
+	h.place(Vector3(-13, 0.05, -15), Vector3.FORWARD)
+	await _until(func(): return hurts[0] > 0, 3.0)
+	check(hurts[0] > 0, "a spinner's arm hurts")
+	# A crusher sends the hero back; water does too.
+	falls[0] = 0
+	level.add(Crusher.make(3.0, Vector3(2, 1, 2), 0.5), Vector3(20, 0, -15))
+	h.place(Vector3(20, 0.05, -15), Vector3.FORWARD)
+	await _until(func(): return falls[0] > 0, 6.0)
+	check(falls[0] > 0, "a crusher squashes")
+	falls[0] = 0
+	level.water(36, -4, 40, 0, -1.0)
+	h.place(Vector3(38, 2, -2), Vector3.FORWARD)
+	await _until(func(): return falls[0] > 0, 2.0)
+	check(falls[0] > 0, "falling in water sends the hero back")
+	# A boss: hurts to touch until open, then a stomp is a hit.
+	var boss := Boss.new()
+	boss.max_health = 2
+	level.add(boss, Vector3(0, 0, 10))
+	boss.make_body(Vector3(1.6, 1.4, 1.6))
+	await _ticks(2)
+	hurts[0] = 0
+	h.safe_time = 0.0
+	h.place(Vector3(0, 0.05, 10.9), Vector3.FORWARD)
+	await _until(func(): return hurts[0] > 0, 1.0)
+	check(hurts[0] > 0 and boss.health == 2, "a closed boss hurts and takes no hit")
+	await _ticks(100)
+	boss.open = true
+	h.place(Vector3(0, 3, 10), Vector3.FORWARD)
+	await _until(func(): return boss.health < 2, 2.0)
+	check(boss.health == 1, "landing on an open boss is a hit")
+	_fast(false)
+	await _free(level)
+
+
 # --- Menus -------------------------------------------------------------------
 
 func _test_menus() -> void:
@@ -378,7 +547,7 @@ func _test_menus() -> void:
 	for b in title._col.find_children("*", "Button", true, false):
 		if (b as Button).disabled:
 			locked += 1
-	check(locked == Courses.ids().size(), "courses are locked until Adventure finds them")
+	check(locked == Courses.of_world("sunny").size(), "courses are locked until Adventure finds them (%d)" % locked)
 	Progress.find_course("sawmill")
 	title._show_speedrun()
 	await _frames(1)
@@ -404,110 +573,135 @@ func _test_menus() -> void:
 	Progress.wipe()
 
 
-# --- Sunny Isles -------------------------------------------------------------
 
-func _test_island() -> void:
+
+# --- Travelling the Skyway ---------------------------------------------------
+
+## The boss door stays shut without enough stars; a world opens once the
+## boss before it is beaten, and its gate then leads across.
+func _test_skyway() -> void:
 	_fast(true)
 	Progress.wipe()
+	check(Worlds.is_open("sunny") and not Worlds.is_open("frosty"), "only Sunny Isles is open at first")
 	var play := _make_play("sunny", "adventure")
-	await _ticks(10)
-	var isle := play.level as SunnyIsle
-	var h := play.hero
-	check(h.is_on_floor(), "the hero lands on Sunny Isles")
-	check(not isle.bridge.shown, "the Skyway is hidden at first")
-	check(play.hud.visible, "the HUD shows")
-	# Pebble's chicks: touch each one and it hops home.
-	h.place(isle.pebble.global_position + Vector3(1.0, 0.1, 0))
-	await _ticks(4)
-	check(isle.nearest_talker() == isle.pebble, "Pebble is there to talk to")
-	isle.pebble.talk()
-	check(play.speech_open(), "Pebble explains about her chicks")
-	while play.speech_open():
-		play._next_line()
-	for c in isle.chicks:
-		h.place(c.global_position + Vector3.UP * 0.1)
-		await _until(func(): return c.is_home, 2.0)
-	check(await _until(func(): return isle.chicks_home == 3, 3.0), "all three chicks go home")
-	check(play.speech_open(), "Pebble thanks you")
-	while play.speech_open():
-		play._next_line()
-	await _ticks(2)
-	var star := _find_star(isle, "sunny/chicks")
-	check(star != null, "Pebble gives a star")
-	if star:
-		h.place(star.global_position - Vector3.UP * 0.4)
-		check(await _until(func(): return Progress.has_star("sunny/chicks"), 2.0), "the chicks' star is found")
-	await _until(func(): return not h.is_locked(), 3.0)
-	# Silver rush: step on the button, grab the eight coins.
-	h.place(isle.silver_button.global_position + Vector3.UP * 0.1)
-	check(await _until(func(): return isle.silver_left > 0.0, 1.0), "the button starts the silver rush")
-	for p in isle._silver.duplicate():
-		if is_instance_valid(p):
-			h.place(p.global_position - Vector3.UP * 0.2)
-			await _ticks(6)
-	star = _find_star(isle, "sunny/silver")
-	check(star != null, "eight silver coins give a star")
-	if star:
-		h.place(star.global_position - Vector3.UP * 0.4)
-		check(await _until(func(): return Progress.has_star("sunny/silver"), 2.0), "the silver star is found")
-	check(isle.bridge.shown, "two stars bring the Skyway back")
-	await _until(func(): return not h.is_locked(), 3.0)
-	# The secret ledge: walk off the north cliff, then the spring goes back up.
-	var pilot := CoursePilot.new([
-		{"to": Vector3(4.5, 2, -21.0), "walk": true},
-		{"to": Vector3(4.5, -1.5, -24.6), "walk": true, "until": func(_p): return Progress.has_star("sunny/ledge")},
-		{"to": Vector3(2.7, -1.5, -23.6), "walk": true, "until": func(_p): return h.velocity.y > 10.0},
-		{"to": Vector3(2.7, 2, -20.5), "until": func(_p): return h.is_on_floor() and h.global_position.y > 1.9},
-	])
-	h.place(Vector3(4.5, 2.05, -19.0), Vector3.FORWARD)
+	await _ticks(6)
+	var isle := play.level as Island
+	var doors := isle.find_children("*", "BossDoor", true, false)
+	if not doors.is_empty():
+		var door := doors[0] as BossDoor
+		check(not door.is_open(), "the boss door is shut at first")
+		play.hero.place(door.global_position + door.facing * 1.2 + Vector3.UP * 0.05)
+		await _ticks(4)
+		door.talk()
+		check(not play._leaving, "a shut boss door doesn't open")
+	var gates := isle.find_children("*", "SkywayGate", true, false)
+	check(not gates.is_empty(), "Sunny Isles has a Skyway gate")
+	if not gates.is_empty():
+		var gate := gates[0] as SkywayGate
+		check(not gate.is_open(), "the gate on is faded at first")
+		Progress.add_star(str(Worlds.boss_def("sunny").star))
+		check(Worlds.is_open("frosty"), "beating Captain Pinch opens Frosty Peaks")
+		check(gate.is_open() == Worlds.is_built("frosty"), "the gate opens once Frosty Peaks is built and open")
+	await _free(play)
+	# Arriving through a door or gate puts the hero in front of it.
+	play = _make_play("sunny", "adventure", {"door": "sawmill"})
+	await _ticks(6)
+	var sawmill_door: CourseDoor = null
+	for d in play.level.find_children("*", "CourseDoor", true, false):
+		if (d as CourseDoor).course_id == "sawmill":
+			sawmill_door = d
+	check(sawmill_door != null and play.hero.global_position.distance_to(sawmill_door.global_position) < 2.5, "coming out of a course arrives at its door")
+	_fast(false)
+	await _free(play)
+	Progress.wipe()
+
+
+# --- Worlds ------------------------------------------------------------------
+
+## A world's own tests (tests/worlds/<world>_tests.gd), or null.
+func _world_tests(w: String) -> RefCounted:
+	var path := "res://tests/worlds/%s_tests.gd" % w
+	if not ResourceLoader.exists(path):
+		return null
+	var wt: RefCounted = load(path).new()
+	wt.t = self
+	return wt
+
+
+## A world's island and boss tests, then every course: once in Adventure
+## and `games` times in Speedrun.
+func _test_world(w: String) -> void:
+	var wt := _world_tests(w)
+	check(wt != null, "%s has tests" % w)
+	if wt == null:
+		return
+	printerr("- world: ", w)
+	Progress.wipe()
+	await wt.run()
+	for id in Courses.of_world(w):
+		await _test_course(wt, id)
+
+
+## The pilot runs a course in Adventure (for the star, taking no hits) and
+## in Speedrun (for gold or better, `games` times).
+func _test_course(wt: RefCounted, id: String) -> void:
+	printerr("- course: ", id)
+	var legs: Array = wt.legs(id) if wt else []
+	check(not legs.is_empty(), "%s has pilot legs" % id)
+	if legs.is_empty():
+		return
+	var def := Courses.get_def(id)
+	_fast(true)
+	Progress.wipe()
+	var play := _make_play(id, "adventure")
+	await _ticks(6)
+	var pilot := CoursePilot.new(wt.legs(id))
 	play.autopilot = pilot.drive
-	check(await _until(func(): return pilot.done, 20.0), "the ledge under the cliff has a star, and a spring back up (stuck at leg %d, %s)" % [pilot.leg, h.global_position])
-	check(Progress.has_star("sunny/ledge"), "the ledge star is found")
-	# The old tower: kick up between the tower and the wall beside it.
-	pilot = CoursePilot.new([
-		{"to": Vector3(15.5, 0, -3.0), "walk": true},
-		{"to": Vector3(15.5, 0, -5.0), "walk": true},
-		{"wall": true, "toward": Vector3.RIGHT, "top": 7.3, "off": Vector3.LEFT,
-			"until": func(_p): return Progress.has_star("sunny/tower")},
-	])
-	h.place(Vector3(15.5, 0.05, -1.5), Vector3.FORWARD)
+	var hurts := [0]
+	play.level.hurt.connect(func(_f): hurts[0] += 1)
+	var falls := [0]
+	play.level.fell.connect(func(): falls[0] += 1)
+	var got := await _until(func(): return Progress.has_star(def.star), 120.0)
+	check(got, "the pilot reaches %s's flag in Adventure (stuck at leg %d, %s)" % [id, pilot.leg, play.hero.global_position])
+	check(hurts[0] == 0, "the pilot's way through %s takes no hits (%d)" % [id, hurts[0]])
+	check(falls[0] == 0, "and no falls (%d)" % falls[0])
+	_fast(false)
+	await _free(play)
+	for game in games:
+		await _test_speedrun(wt, id, game)
+
+
+func _test_speedrun(wt: RefCounted, id: String, game: int) -> void:
+	_fast(true)
+	if game == 0:
+		Progress.wipe()
+	var play := _make_play(id, "speedrun")
+	check(play.run_state == Play.Run.COUNTDOWN, "a speedrun starts with a countdown")
+	await _until(func(): return play.run_state == Play.Run.RUNNING, 5.0)
+	check(absf(play.hero.global_position.z - play.level.spawn.z) < 0.2, "the hero waits at the start during the countdown")
+	check(game == 0 or play.ghost_runner != null, "the best run's ghost races along")
+	var pilot := CoursePilot.new(wt.legs(id))
 	play.autopilot = pilot.drive
-	check(await _until(func(): return pilot.done, 20.0), "the tower can be climbed for its star (at %s)" % h.global_position)
-	play.autopilot = _hands_off
-	await _until(func(): return not h.is_locked(), 3.0)
-	# Lookout Islet, across the Skyway: walk over, pound the strong crate.
-	pilot = CoursePilot.new([
-		{"to": Vector3(12.5, 0, 8.6)},
-		{"to": Vector3(23.5, 0, 8.6)},
-	])
-	h.place(Vector3(9, 0.05, 8.6), Vector3.RIGHT)
-	play.autopilot = pilot.drive
-	check(await _until(func(): return pilot.done, 15.0), "the Skyway reaches Lookout Islet (at %s)" % h.global_position)
-	play.autopilot = _hands_off
-	var crate: Breakable = null
-	for b in isle.find_children("*", "Breakable", true, false):
-		if (b as Breakable).contents == "star:sunny/crates":
-			crate = b
-	check(crate != null, "Lookout Islet has the strong crate")
-	if crate:
-		var crate_at := crate.global_position
-		h.place(crate_at + Vector3.UP * 3.0)
-		await _drive(h, 50, func(inp, i): inp.crouch_pressed = i == 8)
-		check(not is_instance_valid(crate), "a ground pound breaks the strong crate")
-		check(await _until(func(): return Progress.has_star("sunny/crates"), 3.0), "the crate's star is found")
-	# The course door leads into Saw Mill Sprint.
-	var door: CourseDoor = isle.find_children("*", "CourseDoor", true, false)[0]
-	await _until(func(): return not h.is_locked(), 3.0)
-	h.place(door.global_position + door.facing * 1.2 + Vector3.UP * 0.05)
-	await _ticks(4)
-	check(isle.nearest_talker() == door, "the course door can be used")
-	check(isle.secrets_left() == Worlds.total_gems() + 1, "only the course and the gems are left (%d)" % isle.secrets_left())
-	# Falling off costs a heart and comes back at the last flag.
-	play.hearts = Play.MAX_HEARTS
-	var hearts := play.hearts
-	h.place(Vector3(0, -20, 40))
-	await _ticks(3)
-	check(h.global_position.y > -2.0 and play.hearts == hearts - 1, "falling off costs a heart and comes back")
+	var restarts := [0]
+	var last := [0.0]
+	var finished := await _until(func():
+		if play.run_time < last[0]:
+			restarts[0] += 1
+		last[0] = play.run_time
+		return play.run_state == Play.Run.FINISHED, 120.0)
+	check(finished, "the pilot finishes %s in Speedrun (stuck at leg %d, %s)" % [id, pilot.leg, play.hero.global_position])
+	if finished:
+		var msec := play.run_msec()
+		var medal := Courses.medal_for(id, msec)
+		print("  %s: pilot finished in %s (%s)" % [Courses.title(id), Courses.time_text(msec), Courses.MEDALS[medal] if medal > 0 else "no medal"])
+		check(Progress.best_time(id) > 0 and Progress.best_time(id) <= msec, "the time is kept")
+		check(play.results.visible, "the results show")
+		var g := Progress.load_ghost(id)
+		check(g != null and absf(g.duration() - msec / 1000.0) < 0.2, "the run's ghost is kept")
+		check(medal >= 3, "the pilot wins gold or better on %s" % id)
+	check(restarts[0] == 0, "no falls on %s" % id)
+	play.restart_run()
+	check(play.run_state == Play.Run.COUNTDOWN and play.run_msec() == 0, "start again resets the clock")
 	_fast(false)
 	await _free(play)
 
@@ -525,92 +719,12 @@ func _find_star(level: Level, id: String) -> Pickup:
 	return null
 
 
-# --- Saw Mill Sprint ---------------------------------------------------------
-
-## The sliding platforms, nearest the start first.
-static func _platforms(play: Play) -> Array:
-	var list := play.level.find_children("*", "MovingPlatform", true, false)
-	list.sort_custom(func(a, b): return a.position.z > b.position.z)
-	return list
-
-
-static func _plat_at(play: Play, i: int, t: float) -> Vector3:
-	var p: MovingPlatform = _platforms(play)[i]
-	return p._start + p.offset_at(p._t + t)
-
-
-## The pilot's way through Saw Mill Sprint: hop the stones, jump each saw
-## and the spikes, ride the platforms, double jump the shelf, long jump the
-## gap and the conveyor, and run to the flag.
-func _sawmill_legs() -> Array:
-	return [
-		{"to": Vector3(0, 0, -5.6), "jump": "jump", "aim": Vector3(0, 0.5, -8.7)},
-		{"to": Vector3(-0.5, 0.5, -9.6), "jump": "jump", "aim": Vector3(-1, 1, -12.7)},
-		{"to": Vector3(-0.6, 1, -13.6), "jump": "jump", "aim": Vector3(1, 1.5, -16.7)},
-		{"to": Vector3(1, 1.5, -17.6), "jump": "jump", "aim": Vector3(0.5, 1.5, -21.2)},
-		{"to": Vector3(0, 1.5, -22.5), "jump": "jump", "aim": Vector3(0, 1.5, -26.0)},
-		{"to": Vector3(0, 1.5, -26.4), "jump": "jump", "aim": Vector3(0, 1.5, -29.8)},
-		{"to": Vector3(0, 1.5, -30.2), "jump": "jump", "aim": Vector3(0, 1.5, -32.8)},
-		{"to": Vector3(0, 1.5, -32.9), "when": func(p): return absf(_plat_at(p, 0, 0.8).x) < 1.2},
-		{"to": Vector3(0, 1.5, -33.7), "jump": "jump", "aim": func(p, t): return _plat_at(p, 0, t) + Vector3(0, 0, 0.8)},
-		{"to": func(p): return Vector3(_plat_at(p, 0, 0).x, 1.5, -38.0), "jump": "jump", "aim": func(p, t): return _plat_at(p, 1, t) + Vector3(0, 0, 0.6)},
-		{"to": func(p): return Vector3(_plat_at(p, 1, 0).x, 1.5, -42.6), "jump": "jump", "aim": Vector3(1.5, 1.5, -47.6)},
-		{"to": Vector3(-0.8, 1.5, -48.3), "jump": "double", "aim": Vector3(-6.5, 4.0, -48.5)},
-		{"to": Vector3(-11.2, 4.0, -48.5), "jump": "long", "aim": Vector3(-21.8, 3.0, -48.5)},
-		{"to": Vector3(-23.0, 3.0, -48.5), "jump": "long", "aim": Vector3(-33.0, 3.0, -48.5)},
-		{"to": Vector3(-40.0, 3.0, -48.5)},
-	]
-
-
-func _test_course_adventure() -> void:
-	_fast(true)
-	Progress.wipe()
-	var play := _make_play("sawmill", "adventure")
-	await _ticks(6)
-	var pilot := CoursePilot.new(_sawmill_legs())
+## Lets a test's pilot drive the hero until it's done; true if it got there.
+func _pilot(play: Play, legs: Array, seconds: float) -> bool:
+	var pilot := CoursePilot.new(legs)
 	play.autopilot = pilot.drive
-	var hurts := [0]
-	play.level.hurt.connect(func(_f): hurts[0] += 1)
-	var got := await _until(func(): return Progress.has_star("sunny/sawmill"), 60.0)
-	check(got, "the course pilot reaches the flag in Adventure (stuck at leg %d, %s)" % [pilot.leg, play.hero.global_position])
-	check(hurts[0] == 0, "the pilot's way through takes no hits (%d)" % hurts[0])
-	check(Progress.coins > 0, "coins on the way")
-	_fast(false)
-	await _free(play)
-
-
-func _test_speedrun(game: int) -> void:
-	_fast(true)
-	if game == 0:
-		Progress.wipe()
-	var play := _make_play("sawmill", "speedrun")
-	check(play.run_state == Play.Run.COUNTDOWN, "a speedrun starts with a countdown")
-	await _until(func(): return play.run_state == Play.Run.RUNNING, 5.0)
-	var start_z := play.hero.global_position.z
-	check(absf(start_z - play.level.spawn.z) < 0.2, "the hero waits at the start during the countdown")
-	check(game == 0 or play.ghost_runner != null, "the best run's ghost races along")
-	var pilot := CoursePilot.new(_sawmill_legs())
-	play.autopilot = pilot.drive
-	var restarts := [0]
-	var last := [0.0]
-	var finished := await _until(func():
-		if play.run_time < last[0]:
-			restarts[0] += 1
-		last[0] = play.run_time
-		return play.run_state == Play.Run.FINISHED, 60.0)
-	check(finished, "the course pilot finishes Saw Mill Sprint (stuck at leg %d, %s)" % [pilot.leg, play.hero.global_position])
-	if finished:
-		var msec := play.run_msec()
-		var medal := Courses.medal_for("sawmill", msec)
-		print("  Saw Mill Sprint: pilot finished in %s (%s)" % [Courses.time_text(msec), Courses.MEDALS[medal] if medal > 0 else "no medal"])
-		check(Progress.best_time("sawmill") > 0 and Progress.best_time("sawmill") <= msec, "the time is kept")
-		check(play.results.visible, "the results show")
-		var g := Progress.load_ghost("sawmill")
-		check(g != null and absf(g.duration() - msec / 1000.0) < 0.2, "the run's ghost is kept")
-		check(medal >= 3, "the pilot wins gold or better")
-	check(restarts[0] == 0, "no falls")
-	# Start again works straight away.
-	play.restart_run()
-	check(play.run_state == Play.Run.COUNTDOWN and play.run_msec() == 0, "start again resets the clock")
-	_fast(false)
-	await _free(play)
+	var ok := await _until(func(): return pilot.done, seconds)
+	play.autopilot = _hands_off
+	if not ok:
+		printerr("  pilot stuck at leg %d, %s" % [pilot.leg, play.hero.global_position])
+	return ok
