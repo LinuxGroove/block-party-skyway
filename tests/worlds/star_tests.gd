@@ -27,6 +27,8 @@ func legs(course_id: String) -> Array:
 			return _sugar_gears()
 		"moon_ramparts":
 			return _moon_ramparts()
+		"blizzard_bluffs":
+			return _blizzard_bluffs()
 	return []
 
 
@@ -480,3 +482,33 @@ func _moon_ramparts() -> Array:
 		{"to": MoonRamparts.FLAG_TOWER + Vector3(0, 0, -1.6)},
 	])
 	return out
+
+
+# --- Blizzard Bluffs ---------------------------------------------------------
+
+## Hop the floes in the cross wind, jump the spike rows, wait for the saws
+## on the icy bridge, ride each updraft up to the next bluff (waiting for
+## the penguins on the first), hop the spikes on the last, and let the
+## tailwind carry the final jump.
+func _blizzard_bluffs() -> Array:
+	var bl: Array = BlizzardBluffs.BLUFFS
+	var top := func(i: int) -> float: return float(bl[i][2])
+	var fin := BlizzardBluffs.FINISH
+	return [
+		{"to": Vector3(0, 0, -5.4), "jump": "jump", "aim": Vector3(0, 0, -9.6)},
+		{"to": Vector3(0, 0, -11.4), "jump": "jump", "aim": Vector3(0, 0, -15.8)},
+		{"to": Vector3(0, 0, -17.4), "jump": "jump", "aim": Vector3(0, 0, -21.8)},
+		{"to": Vector3(0, 0, -23.4), "jump": "jump", "aim": Vector3(0, 0, -27.0)},
+		{"to": Vector3(0, 0, -28.4), "jump": "jump", "aim": Vector3(0, 0, -31.8)},
+		{"to": Vector3(0, 0, -32.9), "jump": "jump", "aim": Vector3(0, 0, -36.4)},
+		{"to": Vector3(0, 0, -39.2), "when": func(p): return _clear_run(p, Vector3(0, 0, -39.2), Vector3(0, 0, -54.4), 0.35, 0.8)},
+		{"to": Vector3(0, 0, -54.4), "jump": "jump", "aim": Vector3(0, top.call(0), -61.0)},
+		{"to": Vector3(0, top.call(0), -61.4), "when": func(p): return _clear_run(p, Vector3(0, top.call(0), -61.4), Vector3(0, top.call(0), -66.4), 0.3)},
+		{"to": Vector3(0, top.call(0), -66.4), "jump": "jump", "aim": Vector3(0, top.call(1), -72.0)},
+		{"to": Vector3(-0.5, top.call(1), -73.0)},
+		{"to": Vector3(0, top.call(1), -76.2), "jump": "jump", "aim": Vector3(0, top.call(2), -83.0)},
+		{"to": Vector3(0, top.call(2), -86.4), "jump": "jump", "aim": Vector3(0, top.call(3), -92.0)},
+		{"to": Vector3(0, top.call(3), -93.4), "jump": "jump", "aim": Vector3(0, top.call(3), -96.8)},
+		{"to": Vector3(0, top.call(3), -99.4), "jump": "jump", "aim": fin + Vector3(0, 0, 4.5)},
+		{"to": fin + Vector3(0, 0, -0.5)},
+	]

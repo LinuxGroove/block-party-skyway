@@ -26,8 +26,8 @@ func add_environment() -> void:
 
 
 ## The start pad, from (x0, z0) to (x1, z1), with a sign by the spawn.
-func start_pad(x0: int, z0: int, x1: int, z1: int, text: String) -> void:
-	land(x0, z0, x1, z1, 0, 3)
+func start_pad(x0: int, z0: int, x1: int, z1: int, text: String, kind := "grass") -> void:
+	land(x0, z0, x1, z1, 0, 3, kind)
 	add_sign(text, spawn + Vector3(-2, 0, -1))
 	deco("arrows", spawn + spawn_facing * 6.5, rad_to_deg(atan2(-spawn_facing.x, -spawn_facing.z)), 2.0)
 	for s in [-1.0, 1.0]:

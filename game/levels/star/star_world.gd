@@ -16,6 +16,7 @@ const DEF := {
 		"cannon_crypts": {"name": "Cannon Crypts", "star": "star/cannon_crypts", "gem": "star/gem_cannon_crypts", "medals": [41000, 29500, 23700, 20700]},
 		"sugar_gears": {"name": "Sugar Gears", "star": "star/sugar_gears", "gem": "star/gem_sugar_gears", "medals": [56000, 40000, 32300, 28100]},
 		"moon_ramparts": {"name": "Moon Ramparts", "star": "star/moon_ramparts", "gem": "star/gem_moon_ramparts", "medals": [41500, 29500, 23800, 20700]},
+		"blizzard_bluffs": {"name": "Blizzard Bluffs", "star": "star/blizzard_bluffs", "gem": "star/gem_blizzard_bluffs", "medals": [38500, 27500, 22100, 19300]},
 	},
 	"boss": {},
 	"stars": {
@@ -23,10 +24,11 @@ const DEF := {
 		"star/cannon_crypts": "Cannon Crypts",
 		"star/sugar_gears": "Sugar Gears",
 		"star/moon_ramparts": "Moon Ramparts",
+		"star/blizzard_bluffs": "Blizzard Bluffs",
 		"star/silver": "Silver Lap",
 		"star/spire": "Top of the Spire",
 	},
-	"gems": ["star/gem_hub", "star/gem_rainbow_rush", "star/gem_cannon_crypts", "star/gem_sugar_gears", "star/gem_moon_ramparts"],
+	"gems": ["star/gem_hub", "star/gem_rainbow_rush", "star/gem_cannon_crypts", "star/gem_sugar_gears", "star/gem_moon_ramparts", "star/gem_blizzard_bluffs"],
 	## Stars a level hands out when something is done, rather than placing.
 	"given": ["star/silver"],
 	"levels": {
@@ -35,5 +37,6 @@ const DEF := {
 		"cannon_crypts": "res://game/levels/star/cannon_crypts.gd",
 		"sugar_gears": "res://game/levels/star/sugar_gears.gd",
 		"moon_ramparts": "res://game/levels/star/moon_ramparts.gd",
+		"blizzard_bluffs": "res://game/levels/star/blizzard_bluffs.gd",
 	},
 }
