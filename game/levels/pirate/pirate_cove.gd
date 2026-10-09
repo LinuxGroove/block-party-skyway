@@ -33,7 +33,7 @@ var talked_banjo := false
 func _init() -> void:
 	super()
 	title = "Pirate Cove"
-	spawn = Vector3(2, 0, 7)
+	spawn = Vector3(2, 0, 4.5)
 	spawn_facing = Vector3.FORWARD
 
 
@@ -207,8 +207,8 @@ func _fort() -> void:
 	for at in [Vector3(30, FORT, -15), Vector3(36, FORT, -15.2)]:
 		piece("pirate:cannon", at, 180.0)
 		solid(at + Vector3(-0.6, 0, -0.8), at + Vector3(0.6, 0.9, 0.8))
-	piece("pirate:flag-pirate-high", Vector3(30, FORT, 6.5), 0.0)
-	solid(Vector3(29.8, FORT, 6.3), Vector3(30.2, FORT + 3.5, 6.7))
+	piece("pirate:flag-pirate-high", Vector3(28.8, FORT, -15.3), 0.0)
+	solid(Vector3(28.6, FORT, -15.5), Vector3(29.0, FORT + 3.5, -15.1))
 	add_heart(Vector3(45, FORT, -5))
 	_tower()
 
@@ -304,7 +304,7 @@ const SILVER_SPOTS := [
 func _scenery() -> void:
 	# Polly's ship at anchor, out past the fort.
 	piece("pirate:ship-pirate-large", Vector3(60, SEA - 1.0, -30), 140.0, 2.0)
-	for at in [Vector3(-13, 0, -9.3), Vector3(12.5, 0, 6), Vector3(-6, 0, -9.6), Vector3(12.5, 0, 10.5), Vector3(-12.5, 0, 6.5), Vector3(8, 0.5, -9)]:
+	for at in [Vector3(-13, 0, -9.3), Vector3(12.5, 0, 6), Vector3(-9.5, 0, -9.4), Vector3(12.5, 0, 10.5), Vector3(-12.5, 0, 6.5), Vector3(8, 0.5, -9)]:
 		tree(at, "pirate:palm-straight")
 	for at in [Vector3(-8.5, 0, -38.5), Vector3(8.5, 0, -30), Vector3(29.5, FORT, -6), Vector3(45, FORT, 6.5), Vector3(-8.5, 0, 11.2)]:
 		tree(at, "pirate:palm-bend")
