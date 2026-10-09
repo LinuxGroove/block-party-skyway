@@ -33,7 +33,10 @@ func build() -> void:
 	for i in CANNON_LINES.size():
 		var z: float = CANNON_LINES[i]
 		deck(4, int(z) - 1, 6, int(z) + 1, 0)
-		add(Launcher.make("pirate:cannon", Vector3.LEFT, 2.0, 0.25 * i), Vector3(5, 0, z))
+		var gun := Launcher.make("pirate:cannon", Vector3.LEFT, 2.0, 0.25 * i)
+		# Its balls drop out just past the dock.
+		gun.shot_life = 1.3
+		add(gun, Vector3(5, 0, z))
 		deco("pirate:crate", Vector3(5.6, 0, z + 0.6), 90.0, 0.5)
 	for z in [-8.0, -12.0, -16.0, -20.0, -24.0]:
 		add_coin(Vector3(0, 0.5, z))

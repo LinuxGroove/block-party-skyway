@@ -38,6 +38,11 @@ func _init() -> void:
 	cloud_spread = 100.0
 
 
+## Extra views for the screenshots.
+func shots() -> Array:
+	return [{"name": "summit", "at": Vector3(0, SUMMIT, -140.5)}]
+
+
 func build() -> void:
 	start_pad(-3, -6, 3, 4, "The last road: a bit of every world, one after another. Good luck!")
 	_sunny()

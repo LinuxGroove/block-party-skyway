@@ -57,9 +57,9 @@ func build() -> void:
 ## Extra views for the screenshots.
 func shots() -> Array:
 	return [
-		{"name": "spire", "at": Vector3(9, 0, 9), "face": Vector3(-1, 0, -1)},
+		{"name": "spire", "at": Vector3(6, 0, 6), "face": Vector3(-1, 0, -1)},
 		{"name": "ring", "at": Vector3(-12, 0, 12), "face": Vector3(1, 0, -1)},
-		{"name": "top", "at": Vector3(0, SPIRE_TOP, 0.5), "face": Vector3.BACK},
+		{"name": "climb", "at": Vector3(-3.5, 6.5, -3.5), "face": Vector3.BACK},
 	]
 
 
