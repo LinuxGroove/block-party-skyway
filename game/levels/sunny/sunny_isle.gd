@@ -46,6 +46,16 @@ func build() -> void:
 		bridge.show_bridge(false)
 
 
+## Extra views for the screenshots: the beach with its two doors, Windmill
+## Hill and the grove.
+func shots() -> Array:
+	return [
+		{"name": "beach", "at": Vector3(2.5, 0, 20.4), "face": Vector3.FORWARD},
+		{"name": "windmill", "at": Vector3(-13.5, 2, -10.6), "face": Vector3.FORWARD, "stick": Vector2(0, -1)},
+		{"name": "grove", "at": Vector3(12.2, 2, -17), "face": Vector3.RIGHT},
+	]
+
+
 func collect_star(id: String) -> void:
 	var before := world_stars()
 	super(id)
@@ -112,7 +122,7 @@ func _windmill_hill() -> void:
 	land(-19, -21, -14, -16, 3, 1)
 	ramp(Vector3(-13, 2, -18.5), Vector3.LEFT)
 	var mill := SunnyWindmill.new()
-	mill.facing = Vector3.RIGHT
+	mill.facing = Vector3.BACK
 	add(mill, Vector3(-17, 3, -18.5))
 	add_course_door("windmill", Vector3(-12, 2, -12.5), Vector3.RIGHT)
 	add_checkpoint(Vector3(-10, 2, -20), Vector3.RIGHT)

@@ -103,7 +103,8 @@ func think(delta: float) -> void:
 			_rig.play("idle")
 			if h:
 				_turn_toward(_flat(h.global_position - global_position), delta)
-			if act_time > (1.6 if time < 2.0 else 0.8 / pace()):
+			# A longer first wait, while he has his say.
+			if act_time > (3.0 if time < 3.5 else 0.8 / pace()):
 				if scuttles_left > 0:
 					_start(Act.AIM_SCUTTLE)
 					LGAudio.play_sfx("res://assets/kenney/audio/sfx/footstep_wood_001.ogg", -2.0, 0.1)

@@ -30,7 +30,7 @@ func _ready() -> void:
 	add_child(door)
 	# The sails: a hub on the front with four long planks.
 	_sails = Node3D.new()
-	_sails.position = Vector3.UP * 4.0 + facing * 1.5
+	_sails.position = Vector3.UP * 5.0 + facing * 1.6
 	_sails.rotation.y = turn
 	add_child(_sails)
 	var hub := Kit.model("barrel", 0.9)
