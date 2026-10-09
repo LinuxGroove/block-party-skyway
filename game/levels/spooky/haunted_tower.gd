@@ -30,6 +30,14 @@ func _init() -> void:
 	camera_base = [0.0, 20.0, 13.0, false]
 
 
+## Extra views for the screenshots.
+func shots() -> Array:
+	return [
+		{"name": "chimney", "at": Vector3(6.5, 4.8, -5), "face": Vector3.FORWARD},
+		{"name": "roof", "at": Vector3(-4.2, ROOF, -7.0), "face": Vector3.RIGHT},
+	]
+
+
 func build() -> void:
 	_tower()
 	_courtyard()

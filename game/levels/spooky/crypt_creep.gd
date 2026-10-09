@@ -28,6 +28,14 @@ func _init() -> void:
 	camera_base = [0.0, 30.0, 9.5, false]
 
 
+## Extra views for the screenshots.
+func shots() -> Array:
+	return [
+		{"name": "lids", "at": Vector3(0, 1.0, -23.4), "face": Vector3.FORWARD},
+		{"name": "coffins", "at": Vector3(2.7, 4.0, -58.3), "face": Vector3.RIGHT},
+	]
+
+
 func build() -> void:
 	# The start, in front of the crypt's gate.
 	land(-3, -6, 3, 4, 0, 3)
@@ -106,18 +114,18 @@ func build() -> void:
 	camera_zone(Vector3(-5, 2.2, -68), Vector3(28, 14, -57.5), -90.0, 30.0, 10.0)
 
 	# Coffins float over a dark pit: each drops away soon after it's stood on.
-	SpookyProps.swamp(self, 3, -65, 14, -55, -1.0)
+	SpookyProps.swamp(self, 3, -65, 13, -55, -1.0)
 	for i in 3:
-		var c := SpookyCoffin.floating(0.5, 90.0)
-		add(c, Vector3(5.4 + 3.2 * i, 2.5, -60))
+		var c := SpookyCoffin.floating(0.5)
+		add(c, Vector3(5.0 + 3.0 * i, 2.5, -60))
 		coffins.append(c)
-		add_coin(Vector3(5.4 + 3.2 * i, 3.0, -60))
+		add_coin(Vector3(5.0 + 3.0 * i, 3.0, -60))
 	for at in [Vector3(5, 0, -63.5), Vector3(10, 0, -56.5), Vector3(12.5, 0, -63)]:
 		deco("grave:candle-multiple", at + Vector3.UP * -1.0, 0.0, 2.4)
-	SpookyProps.glow(self, Vector3(8.6, 1.5, -60), 1.2, 6.0)
+	SpookyProps.glow(self, Vector3(8.0, 1.5, -60), 1.2, 6.0)
 
 	# The way out, and the flag.
-	land(14, -66, 26, -54, 1.0, 4)
+	land(13, -66, 26, -54, 1.0, 4)
 	add_flag(Vector3(20, 1.0, -60), Vector3.RIGHT)
 	SpookyProps.lamp(self, Vector3(18.4, 1.0, -62.2), "single")
 	SpookyProps.lamp(self, Vector3(18.4, 1.0, -57.8), "single")

@@ -9,6 +9,8 @@ extends RefCounted
 
 const LAMP_COLOR := Color("ffb45a")
 const SWAMP := Color(0.17, 0.42, 0.28, 0.9)
+## How far behind its origin an iron fence piece stands, at size 1.
+const IRON_BACK := 0.33
 const STONES := ["grave:gravestone-round", "grave:gravestone-cross", "grave:gravestone-bevel", "grave:gravestone-roof", "grave:gravestone-decorative", "grave:gravestone-wide"]
 
 
@@ -92,9 +94,14 @@ static func fence(level: Level, from: Vector3, to: Vector3, model := "grave:iron
 	var n := maxi(1, roundi(span.length() / size))
 	var step := span.length() / n
 	var turn := rad_to_deg(atan2(span.x, span.z)) + 90.0
+	# Kenney's iron fences stand a third of a metre behind their origin: bring
+	# the bars onto the line, where the collision is.
+	var back := Vector3.ZERO
+	if model.begins_with("grave:iron-fence"):
+		back = Vector3(sin(deg_to_rad(turn)), 0, cos(deg_to_rad(turn))) * IRON_BACK * step
 	for i in n:
 		var at := from + span * ((i + 0.5) / n)
-		level.piece(model, at, turn, step)
+		level.piece(model, at + back, turn, step)
 	if high > 0.0:
 		var side := span.normalized().cross(Vector3.UP) * 0.1
 		var lo := Vector3(minf(from.x, to.x), from.y, minf(from.z, to.z)) - side.abs()

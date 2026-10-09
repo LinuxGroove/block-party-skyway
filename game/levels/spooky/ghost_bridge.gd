@@ -28,6 +28,14 @@ func _init() -> void:
 	camera_base = [0.0, 30.0, 9.5, false]
 
 
+## Extra views for the screenshots.
+func shots() -> Array:
+	return [
+		{"name": "islet", "at": Vector3(0, 0, -29), "face": Vector3.FORWARD},
+		{"name": "raft", "at": Vector3(-14, 0, -33), "face": Vector3.LEFT},
+	]
+
+
 func build() -> void:
 	SpookyProps.swamp(self, -44, -52, 12, 10, -1.5)
 	var n := 0

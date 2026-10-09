@@ -370,10 +370,10 @@ func _crypt_creep() -> Array:
 		{"to": Vector3(0, 1.0, -48.4), "jump": "jump", "aim": Vector3(0, 2.5, -51.6)},
 		{"to": Vector3(0.5, 2.5, -52.6), "when": func(p): return _arm_angle((p.level as SpookyCryptCreep).spinner) > 70.0 and _arm_angle((p.level as SpookyCryptCreep).spinner) < 200.0},
 		{"to": Vector3(0.8, 2.5, -55.5), "jump": "jump", "aim": Vector3(1.6, 4.0, -58.9)},
-		{"to": Vector3(2.5, 4.0, -60.0), "jump": "jump", "aim": Vector3(5.2, 2.5, -60.0)},
-		{"to": Vector3(6.2, 2.5, -60.0), "jump": "jump", "aim": Vector3(8.4, 2.5, -60.0)},
-		{"to": Vector3(9.4, 2.5, -60.0), "jump": "jump", "aim": Vector3(11.6, 2.5, -60.0)},
-		{"to": Vector3(12.6, 2.5, -60.0), "jump": "jump", "aim": Vector3(15.0, 1.0, -60.0)},
+		{"to": Vector3(2.5, 4.0, -60.0), "jump": "jump", "aim": Vector3(4.9, 2.5, -60.0)},
+		{"to": Vector3(5.5, 2.5, -60.0), "jump": "jump", "aim": Vector3(7.9, 2.5, -60.0)},
+		{"to": Vector3(8.5, 2.5, -60.0), "jump": "jump", "aim": Vector3(10.9, 2.5, -60.0)},
+		{"to": Vector3(11.5, 2.5, -60.0), "jump": "jump", "aim": Vector3(14.0, 1.0, -60.0)},
 		{"to": Vector3(20.5, 1.0, -60.0)},
 	]
 

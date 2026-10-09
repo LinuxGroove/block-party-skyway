@@ -30,6 +30,14 @@ func _init() -> void:
 	camera_base = [0.0, 30.0, 9.5, false]
 
 
+## Extra views for the screenshots.
+func shots() -> Array:
+	return [
+		{"name": "ditch", "at": Vector3(-4, 0, -29), "face": Vector3.LEFT},
+		{"name": "lane", "at": Vector3(-24, 0.5, -41), "face": Vector3.FORWARD},
+	]
+
+
 func build() -> void:
 	_field()
 	_ditch()
@@ -110,8 +118,8 @@ func _lane() -> void:
 	# The gate, with a zombie standing in it: jump on it to get by.
 	SpookyProps.fence(self, Vector3(-27, 0.5, -38), Vector3(-25.1, 0.5, -38), "grave:iron-fence", 1.4, 1.0)
 	SpookyProps.fence(self, Vector3(-22.9, 0.5, -38), Vector3(-21, 0.5, -38), "grave:iron-fence", 1.4, 1.0)
-	deco("grave:iron-fence-border-column", Vector3(-25.1, 0.5, -38), 0.0, 2.0)
-	deco("grave:iron-fence-border-column", Vector3(-22.9, 0.5, -38), 0.0, 2.0)
+	for x in [-25.1, -22.9]:
+		deco("grave:pillar-small", Vector3(x, 0.5, -38), 0.0, 2.2)
 	gatekeeper = Critter.chaser("grave:character-zombie", 2.5, 1.6, 1.1)
 	add(gatekeeper, Vector3(-24, 0.5, -38))
 	add_sign("A zombie in the gate! Jump on it.", Vector3(-26.2, 0.5, -35.2))

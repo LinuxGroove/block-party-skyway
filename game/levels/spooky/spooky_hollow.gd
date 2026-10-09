@@ -177,6 +177,12 @@ func _tower() -> void:
 	land(16, -23, 20, -22, 11.5, 11, "snow")
 	ledge(16, -22, 20, -21, 7, "snow")
 	add_star("spooky/tower", Vector3(18, 12.2, -19))
+	# Dark windows up the tower, a lit one on each face.
+	deco("grave:crypt-door", Vector3(18, 6.5, -16.95), 0.0, 3.0)
+	deco("grave:crypt-door", Vector3(20.05, 8.0, -19), 90.0, 3.0)
+	deco("grave:crypt-door", Vector3(20.05, 2.0, -19.5), 90.0, 3.0)
+	SpookyProps.glow(self, Vector3(18, 7.6, -16.4), 1.2, 5.0)
+	SpookyProps.glow(self, Vector3(20.6, 9.1, -19), 1.2, 5.0)
 	SpookyProps.glow(self, Vector3(18, 13.5, -19), 1.6, 6.0)
 	for at in [Vector3(16.4, 12, -20.6), Vector3(19.6, 12, -20.6), Vector3(16.4, 12, -17.4), Vector3(19.6, 12, -17.4)]:
 		deco("grave:pillar-large", at, 0.0, 1.6)
