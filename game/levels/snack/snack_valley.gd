@@ -199,20 +199,20 @@ func _wedding_cake() -> void:
 	land(10, -30, 30, -10, 0, 3)
 	# Three tiers of cream: a tall step, then wafers, then wall kicks.
 	land(12, -28, 28, -14, 2.5, 4, "snow")
-	land(16, -24, 24, -18, 7.0, 5, "snow")
-	land(18, -23, 22, -19, 11.5, 5, "snow")
-	# The candle beside the top tier: kick between them.
-	land(23, -22, 24, -20, 11.0, 4)
-	SnackFood.prop(self, "food:strawberry", Vector3(23.5, 11.0, -21), 4.0)
-	for at in [Vector3(18.6, 11.5, -22.4), Vector3(21.4, 11.5, -19.6), Vector3(18.6, 11.5, -19.6)]:
+	land(16, -28, 24, -22, 7.0, 5, "snow")
+	land(16, -27, 22, -23, 11.5, 5, "snow")
+	# The candle beside the top tier, taller than it: kick between them.
+	land(23, -26, 24, -24, 13.5, 7)
+	SnackFood.prop(self, "food:strawberry", Vector3(23.5, 13.5, -25), 4.0)
+	for at in [Vector3(16.6, 11.5, -26.4), Vector3(16.6, 11.5, -23.6), Vector3(21.4, 11.5, -26.4), Vector3(21.4, 11.5, -23.6)]:
 		SnackFood.prop(self, "food:strawberry", at, 3.0, at.x * 40.0)
-	add_star("snack/cake_top", Vector3(20.5, 11.7, -21.5))
-	add(SnackRaft.wafer("food:waffle", 6.0), Vector3(19, 4.0, -16))
-	add(SnackRaft.wafer("food:waffle", 6.0), Vector3(21.6, 5.5, -16))
+	add_star("snack/cake_top", Vector3(19.5, 11.7, -25.0))
+	add(SnackRaft.wafer("food:waffle", 6.0), Vector3(23, 4.0, -17.2))
+	add(SnackRaft.wafer("food:waffle", 6.0), Vector3(23, 5.5, -20.2))
 	add_course_door("cake_climb", Vector3(16, 0, -12), Vector3.BACK)
 	add_sign("Too tall? Crouch, then jump. Wafers drop when you stand on them: keep moving!", Vector3(11.5, 0, -12.5))
 	coin_line(Vector3(13, 2.6, -16), Vector3(17.5, 2.6, -16), 3)
-	coin_line(Vector3(22.5, 7.5, -21.5), Vector3(22.5, 10.5, -21.5), 3)
+	coin_line(Vector3(22.5, 7.5, -25), Vector3(22.5, 10.5, -25), 3)
 	add_heart(Vector3(26.5, 2.5, -26.5))
 	# A bowl of fruit at the cake's foot.
 	SnackFood.solid(self, "food:watermelon", Vector3(27, 0, -12), 4.0)
@@ -273,7 +273,7 @@ func _soda_lake() -> void:
 	add(SnackRaft.make("food:donut-chocolate", 12.0, 0.1), Vector3(-25.5, 0, 4))
 	# A donut off to the north, and a fizzy geyser by a cream cloud.
 	add(SnackRaft.make("food:donut-sprinkles", 11.0, 0.1), Vector3(-19, 0, 0.6))
-	var fizz := WindZone.make(Vector3(2.0, 8.5, 2.0), Vector3.UP * 44.0)
+	var fizz := WindZone.make(Vector3(2.4, 8.5, 2.4), Vector3.UP * 52.0)
 	add(fizz, Vector3(-19.5, -0.5, -3.4))
 	_fizz_column(Vector3(-19.5, -0.5, -3.4), 8.5)
 	ledge(-22, -7, -17, -4.5, 6.0, "snow")
@@ -293,8 +293,8 @@ func _soda_lake() -> void:
 func _fizz_column(at: Vector3, height: float) -> void:
 	var m := MeshInstance3D.new()
 	var cyl := CylinderMesh.new()
-	cyl.top_radius = 0.75
-	cyl.bottom_radius = 1.0
+	cyl.top_radius = 0.95
+	cyl.bottom_radius = 1.2
 	cyl.height = height
 	m.mesh = cyl
 	var mat := StandardMaterial3D.new()

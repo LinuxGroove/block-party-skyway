@@ -8,17 +8,18 @@ extends Boss
 ## ground pound him, or dive into him). Three hits, and each time he sniffs
 ## quicker and charges faster.
 ##
-## While he's stuck, bumping into his side doesn't hurt; at any other time
-## touching him does.
+## While he's stuck, bumping into his side doesn't hurt, nor does he while
+## he backs out of the cake and trots home dazed; touching him while he
+## sniffs, aims or charges does.
 
 enum State { INTRO, TROT, SNIFF, AIM, CHARGE, STUCK, BACK_OUT }
 
-## Charge speed, the seconds the line shows before he goes, and the seconds
-## he's stuck, for 3, 2 and 1 hearts left.
-const CHARGE_SPEED := [15.0, 12.5, 10.0]
-const AIM_TIME := [0.7, 0.85, 1.05]
-const STUCK_TIME := [2.0, 2.4, 2.8]
-const SNIFF_TIME := 1.1
+## Seconds sniffing, the seconds the line shows before he goes, his charge
+## speed and the seconds he's stuck, for 3, 2 and 1 hearts left.
+const SNIFF_TIME := [1.4, 1.1, 0.8]
+const AIM_TIME := [1.05, 0.85, 0.7]
+const CHARGE_SPEED := [10.0, 12.5, 15.0]
+const STUCK_TIME := [2.8, 2.4, 2.0]
 const TROT_SPEED := 4.5
 const MODEL_SCALE := 1.35
 
@@ -83,7 +84,7 @@ func think(delta: float) -> void:
 		State.SNIFF:
 			rig.play("eat")
 			_face(_to_hero(), delta, 3.0)
-			if state_time > SNIFF_TIME:
+			if state_time > SNIFF_TIME[_level_index()]:
 				_aim()
 				_go(State.AIM)
 		State.AIM:
@@ -184,6 +185,9 @@ func _smash() -> void:
 
 
 func _on_touched(body: Node3D) -> void:
+	# Backing out and trotting home, he's too dazed to hurt anyone.
+	if state in [State.BACK_OUT, State.TROT]:
+		return
 	# Stuck in a cake, he's harmless from the side.
 	if state == State.STUCK and open and not beaten and body == level.hero:
 		var h := level.hero
