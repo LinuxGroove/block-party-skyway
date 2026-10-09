@@ -352,9 +352,10 @@ const DUST_SPOTS := [
 # --- Scenery -----------------------------------------------------------------
 
 func _scenery() -> void:
-	add_skyway_gate("castle", Vector3(-9, 0, 16.6), Vector3.FORWARD)
+	add_skyway_gates(Vector3(-9, 0, 16.6), Vector3.FORWARD, Vector3(7.5, 0, 16.6), Vector3.FORWARD)
 	StationDeco.rail(self, Vector3(-14, 0, 17.8), Vector3(-11, 0, 17.8))
-	StationDeco.rail(self, Vector3(-7, 0, 17.8), Vector3(12, 0, 17.8))
+	StationDeco.rail(self, Vector3(-7, 0, 17.8), Vector3(5.5, 0, 17.8))
+	StationDeco.rail(self, Vector3(9.5, 0, 17.8), Vector3(12, 0, 17.8))
 	for at in [Vector3(-12.5, 0, -12.5), Vector3(12.5, 0, -12.5), Vector3(12.5, 0, 2)]:
 		StationDeco.cargo(self, at, 2)
 	for at in [Vector3(-12.6, 0, 6), Vector3(12.6, 0, -5)]:
