@@ -110,3 +110,8 @@ func _bar(id: String, at: Vector3, length: int, speed: float) -> Spinner:
 	var s := Spinner.make(length, speed)
 	s.name = id
 	return add(s, at) as Spinner
+
+
+## An extra view for the screenshots.
+func shots() -> Array:
+	return [{"name": "mill", "at": Vector3(-35.5, 5, -35), "face": Vector3.LEFT}]

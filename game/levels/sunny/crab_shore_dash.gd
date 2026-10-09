@@ -100,3 +100,8 @@ func build() -> void:
 ## A palm tree (from the pirates' beaches, a little smaller).
 func palm(at: Vector3) -> void:
 	tree(at, "pirate:palm-straight", 0.7)
+
+
+## An extra view for the screenshots.
+func shots() -> Array:
+	return [{"name": "tides", "at": Vector3(0, 0, -41.5), "face": Vector3.FORWARD}]

@@ -132,3 +132,8 @@ func deck(x0: int, z0: int, x1: int, z1: int, top: float) -> void:
 ## A giant tree whose crown reaches up to just under `top` (scenery only).
 func giant_tree(top: Vector3, scale := 4.2) -> void:
 	piece("tree", top - Vector3.UP * (1.93 * scale + 0.15), fmod(absf(top.x * 41.0 + top.z * 17.0), 360.0), scale)
+
+
+## An extra view for the screenshots.
+func shots() -> Array:
+	return [{"name": "branches", "at": Vector3(23.5, 10, -27.5), "face": Vector3.RIGHT}]
