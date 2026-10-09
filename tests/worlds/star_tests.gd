@@ -23,6 +23,8 @@ func legs(course_id: String) -> Array:
 			return _rainbow_rush()
 		"cannon_crypts":
 			return _cannon_crypts()
+		"sugar_gears":
+			return _sugar_gears()
 	return []
 
 
@@ -177,8 +179,9 @@ static func _dist_after(secs: float, v0: float, accel: float) -> float:
 
 ## True if the hero, setting off now from `from` and running straight to
 ## `to`, keeps clear of every hazard on the way. `ice_from` is how far along
-## the ice starts (it's slow to speed up on).
-static func _clear_run(play: Play, from: Vector3, to: Vector3, margin := 0.3, ice_from := INF) -> bool:
+## the ice starts (it's slow to speed up on), and `drag` the speed of a belt
+## running against the hero.
+static func _clear_run(play: Play, from: Vector3, to: Vector3, margin := 0.3, ice_from := INF, drag := 0.0) -> bool:
 	var level := play.level
 	var hazards := []
 	for kind in ["Spinner", "Saw", "Critter", "Crusher", "SpikeTrap", "Projectile", "Launcher"]:
@@ -197,7 +200,7 @@ static func _clear_run(play: Play, from: Vector3, to: Vector3, margin := 0.3, ic
 			break
 		var accel := Hero.GROUND_ACCEL * (0.35 if d >= ice_from else 1.0)
 		v = minf(v + accel * dt, Hero.RUN_SPEED)
-		d += v * dt
+		d += maxf(v - drag, 0.0) * dt
 		secs += dt
 	return true
 
@@ -294,6 +297,37 @@ static func _ball_coming(play: Play, at: Vector3, lo: float, hi: float) -> bool:
 	return false
 
 
+## The crusher whose home is nearest `at`.
+static func _crusher_at(play: Play, at: Vector3) -> Crusher:
+	var best: Crusher = null
+	for n in play.level.find_children("*", "Crusher", true, false):
+		var k := n as Crusher
+		if best == null or k._home.distance_to(at) < best._home.distance_to(at):
+			best = k
+	return best
+
+
+## How far through its cycle (in seconds) the crusher nearest `at` is,
+## `ahead` seconds from now.
+static func _crusher_time(play: Play, at: Vector3, ahead := 0.0) -> float:
+	var k := _crusher_at(play, at)
+	return fposmod(k._t + ahead, k.cycle())
+
+
+## True if the lift at `at` is down (or only just rising) and will be when
+## a jump onto it lands.
+static func _lift_ready(play: Play, at: Vector3) -> bool:
+	var k := _crusher_at(play, at)
+	return _crusher_time(play, at) < k.down_time + 0.2 - 0.55
+
+
+## True if the lift at `at` is up, with time left to jump off.
+static func _lift_up(play: Play, at: Vector3) -> bool:
+	var k := _crusher_at(play, at)
+	var u := _crusher_time(play, at)
+	return u >= k.down_time + k.rise_time and u < k.down_time + k.rise_time + k.up_time - 0.45
+
+
 ## A level's moving platforms of one row (by z or x), nearest the start
 ## first.
 static func _platforms(play: Play) -> Array:
@@ -366,5 +400,45 @@ func _cannon_crypts() -> Array:
 	out.append_array([
 		{"to": Vector3(2.6, 3.0, -108.0)},
 		{"to": Vector3(7.5, 3.0, -108.5)},
+	])
+	return out
+
+
+# --- Sugar Gears -------------------------------------------------------------
+
+## Under the presses one gap at a time against the belt, between the cogs,
+## onto the pancakes and across on the waffle, then up both lifts to the
+## cake.
+func _sugar_gears() -> Array:
+	var belt := SugarGears.BELT_SPEED
+	var out := []
+	var stops := [-7.3, -12.5, -17.5, -22.6]
+	for i in stops.size() - 1:
+		var a := Vector3(0, 0, stops[i])
+		var b := Vector3(0, 0, stops[i + 1])
+		out.append({"to": a, "when": func(p): return _clear_run(p, a, b, 0.25, INF, belt)})
+	var gaps := [-30.5, -38.5, -46.5, -55.2]
+	for i in gaps.size() - 1:
+		var a := Vector3(0, 0, gaps[i])
+		var b := Vector3(0, 0, gaps[i + 1])
+		out.append({"to": a, "when": func(p): return _clear_run(p, a, b, 0.3)})
+	var lift1: Vector3 = SugarGears.LIFTS[0]
+	var lift2: Vector3 = SugarGears.LIFTS[1]
+	out.append_array([
+		{"to": Vector3(0, 0, -58.0), "when": func(p): return _plat_at(p, 0, 1.1).z > -65.0},
+		{"to": Vector3(0, 0, -60.5), "jump": "jump", "aim": func(p, s): return _plat_at(p, 0, s)},
+		# Ride at the back of each sweet, then run off its front.
+		{"to": func(p): return _plat_at(p, 0, 0) + Vector3(0, 0, 0.8),
+			"when": func(p): return _plat_at(p, 0, 0.5).z < -69.0 and absf(_plat_at(p, 1, 0.9).x) < 1.4},
+		{"to": func(p): return _plat_at(p, 0, 0) + Vector3(0, 0, -0.9), "jump": "jump", "aim": func(p, s): return _plat_at(p, 1, s)},
+		{"to": func(p): return _plat_at(p, 1, 0) + Vector3(0, 0, 0.8), "when": func(p): return absf(_plat_at(p, 1, 0.6).x) < 1.0},
+		{"to": func(p): return _plat_at(p, 1, 0) + Vector3(0, 0, -0.9), "jump": "jump", "aim": Vector3(0, 0, -78.0)},
+		{"to": lift1 + Vector3(0, 0, 2.4), "when": func(p): return _lift_ready(p, lift1),
+			"jump": "jump", "aim": lift1 + Vector3.UP},
+		{"to": lift1, "when": func(p): return _lift_up(p, lift1), "jump": "jump", "aim": Vector3(0, 4.0, -86.3)},
+		{"to": Vector3(0, 4.0, -86.4), "when": func(p): return _lift_ready(p, lift2),
+			"jump": "jump", "aim": lift2 + Vector3.UP},
+		{"to": lift2, "when": func(p): return _lift_up(p, lift2), "jump": "jump", "aim": Vector3(0, 7.0, -92.4)},
+		{"to": SugarGears.CAKE + Vector3(0, 0, -2.0)},
 	])
 	return out

@@ -53,6 +53,28 @@ func deck(x0: int, z0: int, x1: int, z1: int, top: float) -> void:
 			piece("platform", Vector3(x + 0.5, top - 0.2, z + 0.5))
 
 
+## A round solid (a cake, a drum, a tower): a cylinder of `radius` from
+## `bottom` up to `top`, centred on `at`'s x and z.
+func drum(at: Vector3, radius: float, bottom: float, top: float) -> void:
+	var shape := CollisionShape3D.new()
+	var cyl := CylinderShape3D.new()
+	cyl.radius = radius
+	cyl.height = top - bottom
+	shape.shape = cyl
+	shape.position = Vector3(at.x, (bottom + top) / 2.0, at.z)
+	_solid.add_child(shape)
+
+
+## A big piece of scenery tipped `tilt` degrees about x after turning
+## `turn` about y (a cog standing on its edge, say). Not batched.
+func prop(model_name: String, at: Vector3, turn := 0.0, scale := 1.0, tilt := 0.0) -> Node3D:
+	var m := Kit.model(model_name, scale)
+	m.rotation_degrees = Vector3(tilt, turn, 0)
+	m.position = at
+	add_child(m)
+	return m
+
+
 ## A glowing star hanging in the sky (scenery).
 func glow(at: Vector3, size := 1.6, color := Color("ffd84a")) -> void:
 	add(StarGlow.make(size, color), at)
