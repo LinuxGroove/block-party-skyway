@@ -365,3 +365,16 @@ func _scenery() -> void:
 		piece("station:structure-barrier-high", at, 0.0, 2.4)
 	for at in [Vector3(-3, 0, 4), Vector3(3, 0, -4)]:
 		deco("station:display-wall-wide", at, 0.0, 1.6)
+	# The station's planet globe in the middle of the main deck.
+	StationDeco.prop(self, "table-display", Vector3(0, 0, 0.5), 0.0, 2.4, Vector3(2.8, 0.8, 1.8))
+	var globe := MeshInstance3D.new()
+	var ball := SphereMesh.new()
+	ball.radius = 0.55
+	ball.height = 1.1
+	globe.mesh = ball
+	globe.material_override = StationDeco.glow(Color("8f7bf0"), 0.85)
+	globe.position = Vector3(0, 1.35, 0.5)
+	add_child(globe)
+	# Masts with lamps round the decks.
+	for at in [Vector3(-13.5, 0, -13.5), Vector3(13.5, 0, -13.5), Vector3(13.5, 0, 15.5), Vector3(-11.5, 2, -27.5), Vector3(11.5, 2, -22), Vector3(29.5, 0, -11.5), Vector3(-29, 0, 25.3)]:
+		StationDeco.beacon(self, at, 7 if at.y > 1.0 else 6)

@@ -13,8 +13,8 @@ var radius := 5.0
 var period := 8.0
 ## Where on the circle it starts, 0 to 1 (0 is east, 0.25 south).
 var phase := 0.0
-var size := Vector3(2, 0.4, 2)
-var model_name := "platform"
+var size := Vector3(2, 0.5, 2)
+var model_name := "block-moving-blue"
 ## Up and over the hub, east and west, instead of round it.
 var wheel := false
 
@@ -23,7 +23,7 @@ var _t := 0.0
 var _spoke: MeshInstance3D
 
 
-static func make(p_radius: float, p_period := 8.0, p_phase := 0.0, p_size := Vector3(2, 0.4, 2), p_model := "platform") -> StationOrbiter:
+static func make(p_radius: float, p_period := 8.0, p_phase := 0.0, p_size := Vector3(2, 0.5, 2), p_model := "block-moving-blue") -> StationOrbiter:
 	var o := StationOrbiter.new()
 	o.radius = p_radius
 	o.period = p_period
@@ -34,7 +34,7 @@ static func make(p_radius: float, p_period := 8.0, p_phase := 0.0, p_size := Vec
 
 
 ## One of a wheel's platforms: 0 is east, 0.25 the top, 0.5 west.
-static func make_wheel(p_radius: float, p_period := 8.0, p_phase := 0.0, p_size := Vector3(2, 0.4, 2)) -> StationOrbiter:
+static func make_wheel(p_radius: float, p_period := 8.0, p_phase := 0.0, p_size := Vector3(2, 0.5, 2)) -> StationOrbiter:
 	var o := make(p_radius, p_period, p_phase, p_size)
 	o.wheel = true
 	return o
@@ -97,10 +97,13 @@ func _physics_process(delta: float) -> void:
 
 
 func _place() -> void:
-	position = at_time(_t)
+	var at := at_time(_t)
+	position = at
 	if _spoke:
 		# Halfway between the platform's edge and the hub, pointing at it.
-		var back := (_center - position).normalized()
+		# (Reading position back here would give last tick's: the physics
+		# server applies it.)
+		var back := (_center - at).normalized()
 		var out := minf(size.x, size.z) / 2.0
 		_spoke.position = back * (out + (radius - out) / 2.0) + Vector3(0, -size.y / 2.0, 0)
 		var up := Vector3.BACK if wheel else Vector3.UP

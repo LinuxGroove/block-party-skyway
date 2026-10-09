@@ -41,7 +41,7 @@ func build() -> void:
 
 	# The first ring: two big platforms, south to north across the gap.
 	for ph in [0.55, 0.05]:
-		add(StationOrbiter.make(4.0, RING_LAP, ph, Vector3(3, 0.4, 3)), RING)
+		add(StationOrbiter.make(4.0, RING_LAP, ph, Vector3(3, 0.5, 3)), RING)
 	_hub(RING)
 	coin_ring(RING + Vector3(0, 1.0, 0), 4.0, 8)
 
@@ -82,7 +82,7 @@ func build() -> void:
 
 	# Falling platforms to the flag.
 	for z in [-59.0, -62.5]:
-		add(FallingPlatform.make(Vector3(2, 0.4, 2), "platform", 0.7), Vector3(0, 8.5, z))
+		add(FallingPlatform.make(Vector3(2, 0.5, 2), "block-moving-blue", 0.7), Vector3(0, 8.5, z))
 		add_coin(Vector3(0, 9.9, z))
 	land(-4, -73, 4, -65, 8.5, 3)
 	StationDeco.panels(self, -4, -73, 4, -65, 8.5, "floor-detail")

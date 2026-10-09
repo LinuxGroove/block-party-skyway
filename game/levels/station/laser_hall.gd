@@ -35,7 +35,9 @@ func build() -> void:
 	StationDeco.wall(self, Vector3(3, 0, 4), Vector3(3, 0, -40), Vector3.LEFT, walls)
 	StationDeco.wall(self, Vector3(-3, 0, -46), Vector3(42, 0, -46), Vector3.BACK, walls)
 	StationDeco.wall(self, Vector3(3, 0, -40), Vector3(42, 0, -40), Vector3.FORWARD, walls)
-	StationDeco.wall(self, Vector3(-3, 0, 4), Vector3(3, 0, 4), Vector3.FORWARD, ["wall-door-wide", "wall", "wall-door-wide"], 2.0)
+	# The hall's open end, so the camera can see in.
+	StationDeco.rail(self, Vector3(-3, 0, 3.8), Vector3(3, 0, 3.8))
+	solid(Vector3(-3, 0, 3.8), Vector3(3, 1.2, 4.0))
 	add_sign("Laser gates blink on and off. Wait until they're off, then run through!", Vector3(-2, 0, 1.2))
 	StationDeco.prop(self, "computer-wide", Vector3(2.2, 0, 2.6), -90.0, 1.4)
 

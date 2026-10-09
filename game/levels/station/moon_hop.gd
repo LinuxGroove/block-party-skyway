@@ -78,7 +78,7 @@ func build() -> void:
 	# Out west on the lifts, to the flag.
 	camera_zone(Vector3(-40, -4, -96), Vector3(-3.5, 20, -79), 90.0, 28.0, 10.0)
 	for l in LIFTS:
-		add(MovingPlatform.make(Vector3(0, 2.5, 0), 3.0, l[1], Vector3(2, 0.4, 2), "platform"), Vector3(l[0], 5.0, -86))
+		add(MovingPlatform.make(Vector3(0, 2.5, 0), 3.0, l[1], Vector3(2, 0.5, 2), "block-moving-blue"), Vector3(l[0], 5.0, -86))
 		add_coin(Vector3(l[0], 9.6, -86))
 	land(-32, -90, -24, -82, 6.0, 3)
 	StationDeco.panels(self, -32, -90, -24, -82, 6.0, "floor-detail")

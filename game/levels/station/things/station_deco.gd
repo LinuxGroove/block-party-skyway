@@ -58,6 +58,23 @@ static func cargo(level: Level, at: Vector3, high := 2) -> void:
 	level.solid(at + Vector3(-0.45, 0, -0.45), at + Vector3(0.45, high * 1.05, 0.45))
 
 
+## A lattice mast `high` metres tall with a glowing lamp on top, to give
+## the decks some height. Solid at its foot.
+static func beacon(level: Level, at: Vector3, high := 6, color := Color("ff4d6d")) -> void:
+	for i in high:
+		level.piece("station:structure", at + Vector3.UP * i, 45.0 * (i % 2), 1.0)
+	level.solid(at + Vector3(-0.5, 0, -0.5), at + Vector3(0.5, high, 0.5))
+	var lamp := MeshInstance3D.new()
+	var ball := SphereMesh.new()
+	ball.radius = 0.28
+	ball.height = 0.56
+	lamp.mesh = ball
+	lamp.material_override = glow(color)
+	lamp.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	lamp.position = at + Vector3.UP * (high + 0.3)
+	level.add_child(lamp)
+
+
 ## The stars, a planet far below and a moon, all around the level.
 static func space(level: Level) -> void:
 	var rng := RandomNumberGenerator.new()

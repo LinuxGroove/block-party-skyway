@@ -34,7 +34,7 @@ func build() -> void:
 	# The first ledge, and a shuttle over the gap.
 	land(-3, -16, 3, -10, 6, 9)
 	add_checkpoint(Vector3(-2, 6, -11), Vector3.FORWARD)
-	add(MovingPlatform.make(Vector3(0, 0, -4), 4.0, 0.0, Vector3(2, 0.4, 2)), Vector3(0, 6, -18))
+	add(MovingPlatform.make(Vector3(0, 0, -4), 4.0, 0.0, Vector3(2, 0.5, 2), "block-moving-blue"), Vector3(0, 6, -18))
 	add_coin(Vector3(0, 7.2, -20))
 
 	# The second ledge and vent.
@@ -63,7 +63,7 @@ func build() -> void:
 	add_checkpoint(Vector3(-2, 16, -46.5), Vector3.LEFT)
 	camera_zone(Vector3(-30, 13, -54), Vector3(0.5, 32, -38.5), 90.0, 26.0, 10.0)
 	for x in [-9.5, -13.5, -17.5]:
-		add(FallingPlatform.make(Vector3(2, 0.4, 2), "platform", 0.7), Vector3(x, 16, -44))
+		add(FallingPlatform.make(Vector3(2, 0.5, 2), "block-moving-blue", 0.7), Vector3(x, 16, -44))
 		add_coin(Vector3(x, 17.4, -44))
 	land(-26, -48, -19, -40, 16, 3)
 	StationDeco.panels(self, -26, -48, -20, -40, 16.0, "floor-detail")
