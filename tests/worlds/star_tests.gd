@@ -21,6 +21,8 @@ func legs(course_id: String) -> Array:
 	match course_id:
 		"rainbow_rush":
 			return _rainbow_rush()
+		"cannon_crypts":
+			return _cannon_crypts()
 	return []
 
 
@@ -275,6 +277,23 @@ static func _near_body(p: Vector3, at: Vector3, r: float) -> bool:
 	return p.distance_to(Vector3(at.x, y, at.z)) < r
 
 
+## True if a cannonball flying down a lane is between `lo` and `hi` metres
+## from `at`, still coming.
+static func _ball_coming(play: Play, at: Vector3, lo: float, hi: float) -> bool:
+	for n in play.level.find_children("*", "Projectile", true, false):
+		var pr := n as Projectile
+		if pr.velocity.length() < 0.1:
+			continue
+		var back := -pr.velocity.normalized()
+		var rel := pr.global_position - at
+		var d := rel.dot(back)
+		var off := rel - back * d
+		off.y = 0.0
+		if d > lo and d < hi and off.length() < 1.0:
+			return true
+	return false
+
+
 ## A level's moving platforms of one row (by z or x), nearest the start
 ## first.
 static func _platforms(play: Play) -> Array:
@@ -317,5 +336,35 @@ func _rainbow_rush() -> Array:
 		{"to": Vector3(-45.9, 2.5, -62.0), "jump": "jump", "aim": Vector3(-49.5, 2.5, -62.0)},
 		{"to": Vector3(-49.9, 2.5, -62.0), "jump": "jump", "aim": Vector3(-53.5, 2.5, -62.0)},
 		{"to": Vector3(-68.0, 4.0, -62.0)},
+	])
+	return out
+
+
+# --- Cannon Crypts -----------------------------------------------------------
+
+## Hop over the dock's cannon lines, wait for each terrace's ghost to drift
+## aside, hop the rotting planks, jump each cannonball down the gangway and
+## step off to the flag.
+func _cannon_crypts() -> Array:
+	var out := [
+		{"to": Vector3(0, 0, -8.0), "jump": "jump", "aim": Vector3(0, 0, -12.0)},
+		{"to": Vector3(0, 0, -12.4), "jump": "jump", "aim": Vector3(0, 0, -16.0)},
+		{"to": Vector3(0, 0, -16.4), "jump": "jump", "aim": Vector3(0, 0, -20.0)},
+		{"to": Vector3(0, 0, -20.4), "jump": "jump", "aim": Vector3(0, 0, -24.0)},
+	]
+	for i in 3:
+		var top := 1.5 * i
+		var z0 := -27.0 - 10.0 * i
+		out.append({"to": Vector3(0, top, z0), "when": func(p): return _clear_run(p, Vector3(0, top, z0), Vector3(0, top, z0 - 7.6))})
+		out.append({"to": Vector3(0, top, z0 - 7.6), "jump": "jump", "aim": Vector3(0, top + (1.5 if i < 2 else 0.0), z0 - 10.6 - (0.4 if i == 2 else 0.0))})
+	for i in CannonCrypts.PLANKS - 1:
+		out.append({"to": Vector3(0, 3.0, -59.6 - i * 3.5), "jump": "jump", "aim": Vector3(0, 3.0, -62.5 - i * 3.5)})
+	out.append({"to": Vector3(0, 3.0, -80.6), "jump": "jump", "aim": Vector3(0, 3.0, -84.0)})
+	for z in CannonCrypts.GANGWAY_JUMPS:
+		out.append({"to": Vector3(0, 3.0, z), "stop": true, "when": func(p): return _ball_coming(p, Vector3(0, 3.0, z), 0.6, 2.2),
+			"jump": "jump", "aim": Vector3(0, 3.0, z - 3.6)})
+	out.append_array([
+		{"to": Vector3(2.6, 3.0, -108.0)},
+		{"to": Vector3(7.5, 3.0, -108.5)},
 	])
 	return out

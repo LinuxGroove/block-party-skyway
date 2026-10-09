@@ -13,18 +13,21 @@ const DEF := {
 	"sky": {"top": "#0b0b2e", "horizon": "#7a4fb8", "bottom": "#1a1450", "fog": "#4a3a8a", "fog_density": 0.004, "sun_energy": 1.0, "sun_color": "#fff2d8", "ambient": 0.85},
 	"courses": {
 		"rainbow_rush": {"name": "Rainbow Rush", "star": "star/rainbow_rush", "gem": "star/gem_rainbow_rush", "medals": [40000, 29000, 23200, 20200]},
+		"cannon_crypts": {"name": "Cannon Crypts", "star": "star/cannon_crypts", "gem": "star/gem_cannon_crypts", "medals": [41000, 29500, 23700, 20700]},
 	},
 	"boss": {},
 	"stars": {
 		"star/rainbow_rush": "Rainbow Rush",
+		"star/cannon_crypts": "Cannon Crypts",
 		"star/silver": "Silver Lap",
 		"star/spire": "Top of the Spire",
 	},
-	"gems": ["star/gem_hub", "star/gem_rainbow_rush"],
+	"gems": ["star/gem_hub", "star/gem_rainbow_rush", "star/gem_cannon_crypts"],
 	## Stars a level hands out when something is done, rather than placing.
 	"given": ["star/silver"],
 	"levels": {
 		"star": "res://game/levels/star/star_plaza.gd",
 		"rainbow_rush": "res://game/levels/star/rainbow_rush.gd",
+		"cannon_crypts": "res://game/levels/star/cannon_crypts.gd",
 	},
 }

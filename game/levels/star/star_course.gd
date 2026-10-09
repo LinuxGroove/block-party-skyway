@@ -44,6 +44,15 @@ func goal(at: Vector3, face: Vector3) -> void:
 		add(StarGlow.make(1.3), at + side * s * 3.6 + Vector3.UP * 2.2)
 
 
+## A wooden deck (a dock, a gangway, a ship's deck): the kit's platforms
+## over the squares from (x0, z0) to (x1, z1), with the top at `top`.
+func deck(x0: int, z0: int, x1: int, z1: int, top: float) -> void:
+	solid(Vector3(x0, top - 0.4, z0), Vector3(x1, top, z1))
+	for x in range(x0, x1):
+		for z in range(z0, z1):
+			piece("platform", Vector3(x + 0.5, top - 0.2, z + 0.5))
+
+
 ## A glowing star hanging in the sky (scenery).
 func glow(at: Vector3, size := 1.6, color := Color("ffd84a")) -> void:
 	add(StarGlow.make(size, color), at)
