@@ -120,7 +120,7 @@ func _ready() -> void:
 	if is_speedrun():
 		_start_countdown(3.0)
 	elif not is_course():
-		hud.banner(level.title, "World %d" % Worlds.number(world()), 2.0)
+		hud.banner(level.title, Worlds.label(world()), 2.0)
 
 
 func _load_level() -> void:
@@ -316,10 +316,10 @@ func _on_star(id: String) -> void:
 	LGAudio.play_sfx(STAR_JINGLE, -2.0)
 	var sub := Worlds.star_name(id)
 	var next := Worlds.neighbour(world(), 1)
-	if is_boss() and next != "" and Worlds.is_built(next):
+	if is_boss() and next != "" and Worlds.get_def(next).has("label"):
+		sub = "The Sky Isles' stars are free! %s is open." % Worlds.world_name(next)
+	elif is_boss() and next != "":
 		sub = "The Skyway to %s is back!" % Worlds.world_name(next)
-	elif is_boss() and next == "":
-		sub = "The Sky Isles' stars are free!"
 	hud.banner("Star found!" if fresh else "Found it again", sub, 3.0 if is_boss() else 2.0)
 	_refresh_hud()
 	if (is_course() or is_boss()) and not is_speedrun():
@@ -494,7 +494,7 @@ func _refresh_hud() -> void:
 		hud.set_place(level.title, "Adventure  ·  " + Worlds.world_name(w))
 	elif level is Island:
 		var left: int = (level as Island).secrets_left()
-		hud.set_place("World %d  ·  %s" % [Worlds.number(w), level.title], "Adventure  ·  %d secrets left in this world" % left if left > 0 else "Adventure  ·  every secret found")
+		hud.set_place("%s  ·  %s" % [Worlds.label(w), level.title] if Worlds.label(w) != level.title else level.title, "Adventure  ·  %d secrets left in this world" % left if left > 0 else "Adventure  ·  every secret found")
 
 
 # --- Sounds ------------------------------------------------------------------

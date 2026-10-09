@@ -97,7 +97,8 @@ func talk() -> void:
 		if not Worlds.is_built(to_world):
 			level.say("The Skyway to %s is still faded. Nobody has been there yet." % Worlds.world_name(to_world))
 		else:
-			level.say("The Skyway to %s is faded. Beat %s to bring it back." % [Worlds.world_name(to_world), Worlds.boss_def(level.world).get("name", "the boss")])
+			var before := Worlds.neighbour(to_world, -1)
+			level.say("The Skyway to %s is faded. Beat %s to bring it back." % [Worlds.world_name(to_world), Worlds.boss_def(before).get("name", "the boss")])
 		return
 	LGAudio.play_sfx("res://assets/kenney/audio/sfx/sfx_magic.ogg", -2.0)
 	level.travel_to(str(Worlds.get_def(to_world).island), {"door": "skyway:" + level.world})

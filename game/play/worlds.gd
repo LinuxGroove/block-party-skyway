@@ -1,6 +1,7 @@
 class_name Worlds
 extends RefCounted
-## The eight worlds of the Sky Isles, in order. Each world's data lives
+## The eight worlds of the Sky Isles, in order, and the Star Road after
+## them (eight more courses and no boss). Each world's data lives
 ## beside its levels in game/levels/<world>/<world>_world.gd: its name, the
 ## island, its courses (with medal times), its boss, every star and hidden
 ## gem, the music and the sky.
@@ -8,7 +9,7 @@ extends RefCounted
 ## A world opens once the boss of the world before it is beaten (that
 ## brings its Skyway back); Sunny Isles is open from the start.
 
-const ORDER := ["sunny", "frosty", "pirate", "spooky", "snack", "gears", "castle", "station"]
+const ORDER := ["sunny", "frosty", "pirate", "spooky", "snack", "gears", "castle", "station", "star"]
 const DATA := {
 	"sunny": preload("res://game/levels/sunny/sunny_world.gd"),
 	"frosty": preload("res://game/levels/frosty/frosty_world.gd"),
@@ -18,6 +19,7 @@ const DATA := {
 	"gears": preload("res://game/levels/gears/gears_world.gd"),
 	"castle": preload("res://game/levels/castle/castle_world.gd"),
 	"station": preload("res://game/levels/station/station_world.gd"),
+	"star": preload("res://game/levels/star/star_world.gd"),
 }
 
 
@@ -42,6 +44,15 @@ static func is_built(world: String) -> bool:
 ## 1 for Sunny Isles, up to 8.
 static func number(world: String) -> int:
 	return ORDER.find(world) + 1
+
+
+## "World 3", or the Star Road's own name.
+static func label(world: String) -> String:
+	return str(get_def(world).get("label", "World %d" % number(world)))
+
+
+static func has_boss(world: String) -> bool:
+	return boss_def(world).has("id")
 
 
 static func world_name(world: String) -> String:

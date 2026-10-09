@@ -206,7 +206,7 @@ func _show_speedrun() -> void:
 	var options := []
 	for w in Worlds.ORDER:
 		if not Courses.of_world(w).is_empty():
-			options.append([w, "%d. %s" % [Worlds.number(w), Worlds.world_name(w)]])
+			options.append([w, Worlds.world_name(w) if Worlds.get_def(w).has("label") else "%d. %s" % [Worlds.number(w), Worlds.world_name(w)]])
 	if not Courses.of_world(_speedrun_world).size():
 		_speedrun_world = "sunny"
 	_col.add_child(LGCycler.make("World", options, _speedrun_world, _set_speedrun_world, 520))

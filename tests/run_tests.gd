@@ -121,12 +121,12 @@ func _free(n: Node) -> void:
 ## The world list hangs together: every world has data, every course a
 ## level and a world, and level ids are unique.
 func _test_data() -> void:
-	check(Worlds.ORDER.size() == 8, "eight worlds")
+	check(Worlds.ORDER.size() == 9 and Worlds.ORDER[8] == "star", "eight worlds and the Star Road")
 	var seen := {}
 	for w in Worlds.ORDER:
 		var def := Worlds.get_def(w)
 		check(not def.is_empty() and str(def.get("name", "")) != "", "%s has data" % w)
-		check(def.has("boss") and def.boss.has("id") and def.boss.has("star"), "%s has a boss" % w)
+		check(w == "star" or (def.has("boss") and def.boss.has("id") and def.boss.has("star")), "%s has a boss" % w)
 		for id in (def.get("levels", {}) as Dictionary):
 			check(not seen.has(id), "level id %s is used once" % id)
 			seen[id] = true
@@ -151,7 +151,7 @@ func _test_world_data(w: String) -> void:
 	for id in def.get("given", []):
 		stars[id] = true
 	var boss: Dictionary = def.boss
-	if (def.levels as Dictionary).has(boss.id):
+	if (def.levels as Dictionary).has(boss.get("id", "")):
 		stars[boss.star] = true
 	# A course's flag gives its star.
 	for c in Courses.of_world(w):
@@ -184,7 +184,7 @@ func _test_world_data(w: String) -> void:
 				doors[(d as CourseDoor).course_id] = d
 			for c in Courses.of_world(w):
 				check(doors.has(c), "%s has a door to %s" % [id, c])
-			if (def.levels as Dictionary).has(boss.id):
+			if (def.levels as Dictionary).has(boss.get("id", "")):
 				check(doors.has(boss.id) and doors[boss.id] is BossDoor, "%s has the boss door" % id)
 			var gates := {}
 			for g in level.find_children("*", "SkywayGate", true, false):
@@ -201,7 +201,7 @@ func _test_world_data(w: String) -> void:
 			check(course.find_children("*", "Checkpoint", true, false).is_empty(), "speedrun %s has no checkpoints" % id)
 			check(course.find_children("*", "FinishFlag", true, false).size() == 1, "%s has one finish flag" % id)
 			course.free()
-		elif id == boss.id:
+		elif id == boss.get("id", ""):
 			check(level is BossArena, "%s is a BossArena" % id)
 		level.free()
 	var want_stars := Worlds.star_ids(w)
