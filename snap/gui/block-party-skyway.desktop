@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Block Party: Skyway
+Comment=Explore every island. Then race through it.
+Exec=block-party-skyway
+Icon=${SNAP}/meta/gui/block-party-skyway.svg
+Categories=Game;ActionGame;
+Keywords=platformer;3D;speedrun;jump;adventure;
+StartupWMClass=Block Party: Skyway

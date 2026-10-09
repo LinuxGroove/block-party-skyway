@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  GODOT_VERSION: 4.7.2
+
+defaults:
+  run:
+    # Named explicitly so pipefail is on and a failing Godot run fails the
+    # step even though its output goes through tee.
+    shell: bash
+
+jobs:
+  test:
+    # The unit tests and data checks, and each world's islands, boss and
+    # courses, side by side.
+    name: Godot checks and tests (${{ matrix.part }})
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        part: [core, sunny, frosty, pirate, spooky, snack, gears, castle, station, star]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Godot
+        run: |
+          curl -sSfL -o godot.zip "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
+          unzip -q godot.zip
+          sudo mv "Godot_v${GODOT_VERSION}-stable_linux.x86_64" /usr/local/bin/godot
+      - name: Import
+        run: godot --headless --path . --import
+      - name: Check every script
+        if: matrix.part == 'core'
+        run: godot --headless --path . tools/check_scripts.tscn 2>&1 | tee check.log; ! grep -q "SCRIPT ERROR" check.log
+      - name: Run tests
+        timeout-minutes: 30
+        run: |
+          if [ "${{ matrix.part }}" = core ]; then part=--core; else part=--world=${{ matrix.part }}; fi
+          godot --headless --path . tests/run_tests.tscn -- --games=2 "$part" 2>&1 | tee test.log; ! grep -q "SCRIPT ERROR" test.log
