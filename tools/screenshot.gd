@@ -133,7 +133,36 @@ func _all(dir: String, only_world: String, wait: float) -> void:
 				var file: String = id + ("-" + str(v.name) if str(v.name) != "" else "") + ".jpg"
 				get_viewport().get_texture().get_image().save_jpg(root.path_join(w).path_join(file), 0.85)
 				print("Saved ", w, "/", file)
+	_write_index(root)
 	get_tree().quit()
+
+
+## A README.md beside the screenshots with every world's levels, from the
+## images that are there.
+func _write_index(root: String) -> void:
+	var lines := ["# Screenshots", "", "Every level of Block Party: Skyway, made with:", "",
+		"    xvfb-run -a -s \"-screen 0 1280x720x24\" godot --path . --resolution 1280x720 tools/screenshot.tscn -- --all=docs/screenshots", ""]
+	for w in Worlds.built():
+		var files := DirAccess.get_files_at(root.path_join(w))
+		if files.is_empty():
+			continue
+		lines.append("## %s" % (Worlds.world_name(w) if Worlds.get_def(w).has("label") else "%s: %s" % [Worlds.label(w), Worlds.world_name(w)]))
+		lines.append("")
+		for id in Levels.of_world(w):
+			var level := Levels.make(id)
+			var title := level.title
+			level.free()
+			var kind := "island" if id == str(Worlds.get_def(w).island) else ("boss" if Worlds.is_boss(id) else "course")
+			for f in files:
+				if f == id + ".jpg" or (f.begins_with(id + "-") and f.ends_with(".jpg")):
+					var view := f.trim_prefix(id).trim_prefix("-").trim_suffix(".jpg")
+					lines.append("**%s** (%s%s)" % [title, kind, ", " + view if view != "" else ""])
+					lines.append("")
+					lines.append("![%s](%s/%s)" % [title, w, f])
+					lines.append("")
+	var out := FileAccess.open(root.path_join("README.md"), FileAccess.WRITE)
+	if out:
+		out.store_string("\n".join(lines))
 
 
 func _fake_ghost() -> Ghost:
