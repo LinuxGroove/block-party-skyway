@@ -13,6 +13,7 @@ extends Node
 ## Or every level of every built world (or of one), as JPEGs in
 ## <dir>/<world>/<level>.jpg, plus any extra views a level lists in shots():
 ##   godot --path . --resolution 1280x720 tools/screenshot.tscn -- --all=docs/screenshots [world=frosty]
+## and a README.md listing them (or only the README: --index=docs/screenshots).
 ## Uses its own saves (user://screenshot-progress-<pid>.cfg).
 
 func _ready() -> void:
@@ -37,6 +38,10 @@ func _ready() -> void:
 	Progress.wipe()
 	for id in Courses.ids():
 		Progress.find_course(id)
+	if out.begins_with("--index="):
+		_write_index(out.trim_prefix("--index="))
+		get_tree().quit()
+		return
 	if out.begins_with("--all="):
 		await _all(out.trim_prefix("--all="), str(opts.get("world", "")), float(opts.get("wait", 2.5)))
 		return
@@ -153,13 +158,16 @@ func _write_index(root: String) -> void:
 			var title := level.title
 			level.free()
 			var kind := "island" if id == str(Worlds.get_def(w).island) else ("boss" if Worlds.is_boss(id) else "course")
-			for f in files:
-				if f == id + ".jpg" or (f.begins_with(id + "-") and f.ends_with(".jpg")):
-					var view := f.trim_prefix(id).trim_prefix("-").trim_suffix(".jpg")
-					lines.append("**%s** (%s%s)" % [title, kind, ", " + view if view != "" else ""])
-					lines.append("")
-					lines.append("![%s](%s/%s)" % [title, w, f])
-					lines.append("")
+			# The level's own view first, then any extra views.
+			var mine := Array(files).filter(func(f): return f.begins_with(id + "-") and f.ends_with(".jpg"))
+			if files.has(id + ".jpg"):
+				mine.push_front(id + ".jpg")
+			for f in mine:
+				var view: String = f.trim_prefix(id).trim_prefix("-").trim_suffix(".jpg")
+				lines.append("**%s** (%s%s)" % [title, kind, ", " + view if view != "" else ""])
+				lines.append("")
+				lines.append("![%s](%s/%s)" % [title, w, f])
+				lines.append("")
 	var out := FileAccess.open(root.path_join("README.md"), FileAccess.WRITE)
 	if out:
 		out.store_string("\n".join(lines))
