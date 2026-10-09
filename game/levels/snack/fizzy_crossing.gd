@@ -12,7 +12,6 @@ extends Level
 
 const STAR := "snack/fizzy_crossing"
 const GEM := "snack/gem_fizzy_crossing"
-const SODA := Color(1.0, 0.55, 0.16, 0.8)
 
 ## The geyser up to the cream cloud.
 var geyser: WindZone
@@ -29,7 +28,7 @@ func _init() -> void:
 func build() -> void:
 	# The soda lake, the whole way.
 	land(-16, -92, 16, 10, -3.0, 1, "snow")
-	water(-16, -92, 16, 10, -0.5, SODA)
+	SnackSoda.lake(self, -16, -92, 16, 10, -0.5)
 
 	# The start, on a dock of frosting.
 	land(-3, 0, 3, 6, 0.5, 3, "snow")

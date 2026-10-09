@@ -44,7 +44,7 @@ func build() -> void:
 ## Views for the screenshot tool.
 func shots() -> Array:
 	return [
-		{"name": "cake", "at": Vector3(16, 0, -10.5), "face": Vector3.FORWARD},
+		{"name": "cake", "at": Vector3(26, 2.5, -15.5), "face": Vector3.FORWARD},
 		{"name": "lake", "at": Vector3(-11, 0, 4), "face": Vector3.LEFT},
 		{"name": "kitchen", "at": Vector3(16, 1, 6), "face": Vector3.RIGHT},
 	]
@@ -262,7 +262,7 @@ func _kitchen() -> void:
 
 func _soda_lake() -> void:
 	land(-38, -13, -12, 14, -2.6, 1, "snow")
-	water(-38, -13, -12, 14, -0.5, Color(1.0, 0.55, 0.16, 0.8))
+	SnackSoda.lake(self, -38, -13, -12, 14, -0.5)
 	add_sign("Soda is far too fizzy to swim in. Hop across on the donuts, and don't wait about on cookies!", Vector3(-11, 0, 6.5), Vector3.RIGHT)
 	# The stepping stones: donuts bob, the cookie sinks.
 	add(SnackRaft.make("food:donut-sprinkles", 12.0, 0.1), Vector3(-15, 0, 4))

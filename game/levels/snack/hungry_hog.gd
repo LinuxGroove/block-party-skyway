@@ -8,9 +8,9 @@ extends Boss
 ## ground pound him, or dive into him). Three hits, and each time he sniffs
 ## quicker and charges faster.
 ##
-## While he's stuck, bumping into his side doesn't hurt, nor does he while
-## he backs out of the cake and trots home dazed; touching him while he
-## sniffs, aims or charges does.
+## While he's stuck, bumping into his side doesn't hurt, nor does he before
+## the fight starts or while he backs out of the cake and trots home dazed;
+## touching him while he sniffs, aims or charges does.
 
 enum State { INTRO, TROT, SNIFF, AIM, CHARGE, STUCK, BACK_OUT }
 
@@ -185,8 +185,9 @@ func _smash() -> void:
 
 
 func _on_touched(body: Node3D) -> void:
-	# Backing out and trotting home, he's too dazed to hurt anyone.
-	if state in [State.BACK_OUT, State.TROT]:
+	# Before the fight starts, and backing out and trotting home (too dazed),
+	# he doesn't hurt anyone.
+	if state in [State.INTRO, State.BACK_OUT, State.TROT]:
 		return
 	# Stuck in a cake, he's harmless from the side.
 	if state == State.STUCK and open and not beaten and body == level.hero:

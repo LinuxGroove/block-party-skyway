@@ -103,3 +103,7 @@ func _scenery() -> void:
 		SnackFood.stick(self, "food:lollypop", at, 5.0, at.x * 30.0)
 	for x in [-2.4, 2.4]:
 		SnackFood.stick(self, "food:lollypop", Vector3(x, 0, 20.4), 4.0, x * 30.0)
+
+
+func shots() -> Array:
+	return [{"name": "fork", "at": Vector3(-1.5, 7.6, -23.2), "face": Vector3.LEFT}]

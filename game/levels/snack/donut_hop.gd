@@ -89,3 +89,7 @@ func _scenery() -> void:
 		SnackFood.prop(self, ["food:donut-sprinkles", "food:donut", "food:donut-chocolate"][int(absf(at.x)) % 3], at, 22.0, at.z * 9.0)
 	SnackFood.prop(self, "food:cake-birthday", Vector3(52, -16, -46), 30.0, 20.0)
 	SnackFood.prop(self, "food:cupcake", Vector3(-14, -6, -20), 8.0, 10.0)
+
+
+func shots() -> Array:
+	return [{"name": "crumble", "at": Vector3(1.0, 1.0, -27.0), "face": Vector3.RIGHT}]
