@@ -60,7 +60,7 @@ func _ready() -> void:
 		for t in ["_test_data", "_test_medals", "_test_progress", "_test_ghost"]:
 			printerr("- ", t)
 			call(t)
-		for t in ["_test_moves", "_test_wall_climb", "_test_things", "_test_menus", "_test_skyway"]:
+		for t in ["_test_moves", "_test_wall_climb", "_test_things", "_test_menus", "_test_skyway", "_test_playtest"]:
 			printerr("- ", t)
 			await call(t)
 		for w in Worlds.built():
@@ -745,3 +745,38 @@ func _pilot(play: Play, legs: Array, seconds: float) -> bool:
 	if not ok:
 		printerr("  pilot stuck at leg %d, %s" % [pilot.leg, play.hero.global_position])
 	return ok
+
+
+## Play test recording: main sets it up, quitting ends it first, and a
+## session packs into one zip with its events and answers.
+func _test_playtest() -> void:
+	check((load("res://game/main.gd") as GDScript).source_code.contains("LGPlaytest.setup(GameConfig.GAME_ID, GameConfig.PLAYTEST)"), "main sets up play test recording")
+	check((load("res://game/ui/title.gd") as GDScript).source_code.contains("LGScenes.quit"), "quitting from the title ends a play test first")
+	var dir := "user://test_playtest"
+	LGPlaytestPack._remove(dir)
+	var p := LGPlaytest.setup(GameConfig.GAME_ID, GameConfig.PLAYTEST)
+	p.dir = dir
+	await get_tree().process_frame
+	p.begin()
+	check(LGPlaytest.recording(), "a play test records")
+	LGPlaytest.event("test", {"at": Vector2(1, 2)})
+	p.mark("fun", "a note")
+	var zip := p._end("test", {"fun": 5})
+	var r := ZIPReader.new()
+	check(zip != "" and r.open(zip) == OK, "a play test packs into one zip")
+	var files := r.get_files()
+	for f in ["session.json", "events.jsonl", "survey.json"]:
+		check(f in files, "the zip holds " + f)
+	if "session.json" in files:
+		var info: Dictionary = JSON.parse_string(r.read_file("session.json").get_string_from_utf8())
+		check(info.get("game") == GameConfig.GAME_ID and int(info.get("marks", 0)) == 1, "session.json names the game and counts the notes")
+		check(not info.get("settings", {}).get("online", {}).has("server_key"), "the server key never goes in a recording")
+	r.close()
+	var survey := LGPlaytestSurvey.make(GameConfig.PLAYTEST)
+	check("fun" in survey.questions() and "name" in survey.questions(), "the survey asks the standard questions")
+	for id in GameConfig.PLAYTEST.get("skip", []):
+		check(not id in survey.questions(), "the survey skips " + id)
+	survey.free()
+	p.queue_free()
+	await get_tree().process_frame
+	LGPlaytestPack._remove(dir)

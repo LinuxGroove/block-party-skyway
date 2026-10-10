@@ -126,7 +126,7 @@ func _set_hero(i: Variant) -> void:
 
 
 func _quit() -> void:
-	get_tree().quit()
+	LGScenes.quit()
 
 
 ## Shown the first time the game starts.

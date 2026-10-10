@@ -40,6 +40,7 @@ func _build() -> void:
 		c.queue_free()
 	_col.add_child(LGUi.label("Paused", "HeaderMedium"))
 	_col.add_child(LGUi.button("Carry on", close, 460))
+	_col.add_child(LGPlaytestButton.make(460))
 	if play.is_speedrun():
 		_col.add_child(LGUi.button("Start again", _restart, 460))
 		_col.add_child(LGCycler.make("Best run's ghost", SettingsPanel.ON_OFF, LGSettings.get_value("play", "ghost"), _set_value.bind("play", "ghost"), 460))
