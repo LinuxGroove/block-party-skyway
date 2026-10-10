@@ -4,6 +4,14 @@ extends RefCounted
 ## input map.
 
 const GAME_ID := "block-party-skyway"
+
+## This round's own questions at the end of a play test (LGPlaytest), on top
+## of the standard ones, and standard ones that don't fit the game. Change
+## them for each round of play testing.
+const PLAYTEST := {
+	"skip": ["story"],
+	"questions": [],
+}
 const TITLE := "Block Party: Skyway"
 
 ## The five astronauts, Block Party's cast in 3D: name and Platformer Kit model.
