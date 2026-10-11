@@ -1,34 +1,179 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 256 256">
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <!-- Made by tools/make_icon.py: edit that and run it again. -->
   <defs>
-    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#3f8fe0"/>
-      <stop offset="1" stop-color="#bfe3ff"/>
+    <clipPath id="tile"><rect x="16" y="16" width="480" height="480" rx="92"/></clipPath>
+    <linearGradient id="sky" gradientUnits="userSpaceOnUse" x1="0" y1="16" x2="0" y2="496">
+      <stop offset="0" stop-color="#2f7fe6"/><stop offset="0.6" stop-color="#7fc2f7"/><stop offset="1" stop-color="#c4e8ff"/>
+    </linearGradient>
+    <radialGradient id="sun" gradientUnits="userSpaceOnUse" cx="120" cy="92" r="150">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.45"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="helmet" gradientUnits="userSpaceOnUse" cx="222" cy="166" r="111">
+      <stop offset="0" stop-color="#ffffff"/><stop offset="0.6" stop-color="#f1f5ff"/><stop offset="1" stop-color="#c9d4ee"/>
+    </radialGradient>
+    <radialGradient id="face" gradientUnits="userSpaceOnUse" cx="252" cy="200" r="51.8">
+      <stop offset="0" stop-color="#a3a8ff"/><stop offset="1" stop-color="#7b80ea"/>
+    </radialGradient>
+    <linearGradient id="gold" gradientUnits="userSpaceOnUse" x1="0" y1="54" x2="0" y2="154">
+      <stop offset="0" stop-color="#fff07a"/><stop offset="1" stop-color="#ffb21e"/>
+    </linearGradient>
+    <linearGradient id="dirtL" gradientUnits="userSpaceOnUse" x1="0" y1="364" x2="0" y2="482">
+      <stop offset="0" stop-color="#eda287"/><stop offset="1" stop-color="#d4826a"/>
+    </linearGradient>
+    <linearGradient id="dirtR" gradientUnits="userSpaceOnUse" x1="0" y1="364" x2="0" y2="482">
+      <stop offset="0" stop-color="#c97a64"/><stop offset="1" stop-color="#a95f4d"/>
     </linearGradient>
   </defs>
-  <rect width="256" height="256" rx="48" fill="url(#sky)"/>
-  <!-- the Skyway: a rainbow from the big island to the little one -->
-  <g fill="none" stroke-width="7" stroke-linecap="round">
-    <path d="M86 132 Q150 58 206 120" stroke="#ff8fb1"/>
-    <path d="M86 139 Q150 65 206 127" stroke="#ffd36e"/>
-    <path d="M86 146 Q150 72 206 134" stroke="#8fe3b0"/>
-    <path d="M86 153 Q150 79 206 141" stroke="#8fd0ff"/>
+  <g clip-path="url(#tile)">
+    <rect x="0" y="0" width="512" height="512" fill="url(#sky)"/>
+    <circle cx="120" cy="92" r="150" fill="url(#sun)"/>
+    <circle cx="344" cy="307.9" r="19.8" fill="#d6eafd"/>
+    <circle cx="363.8" cy="291.7" r="25.2" fill="#d6eafd"/>
+    <circle cx="389" cy="286.3" r="28.8" fill="#d6eafd"/>
+    <circle cx="412.4" cy="300.7" r="21.6" fill="#d6eafd"/>
+    <circle cx="426.8" cy="311.5" r="15.1" fill="#d6eafd"/>
+    <circle cx="344" cy="303.6" r="19.8" fill="#ffffff"/>
+    <circle cx="363.8" cy="287.4" r="25.2" fill="#ffffff"/>
+    <circle cx="389" cy="282" r="28.8" fill="#ffffff"/>
+    <circle cx="412.4" cy="296.4" r="21.6" fill="#ffffff"/>
+    <circle cx="426.8" cy="307.2" r="15.1" fill="#ffffff"/>
+    <path d="M -33.5 452 A 289.5 289.5 0 0 1 545.5 452" fill="none" stroke="#ff5a5f" stroke-width="21.6"/>
+    <path d="M -12.5 452 A 268.5 268.5 0 0 1 524.5 452" fill="none" stroke="#ffa94d" stroke-width="21.6"/>
+    <path d="M 8.5 452 A 247.5 247.5 0 0 1 503.5 452" fill="none" stroke="#ffe066" stroke-width="21.6"/>
+    <path d="M 29.5 452 A 226.5 226.5 0 0 1 482.5 452" fill="none" stroke="#69db7c" stroke-width="21.6"/>
+    <path d="M 50.5 452 A 205.5 205.5 0 0 1 461.5 452" fill="none" stroke="#4dabf7" stroke-width="21.6"/>
+    <path d="M 71.5 452 A 184.5 184.5 0 0 1 440.5 452" fill="none" stroke="#9775fa" stroke-width="21.6"/>
+    <path d="M -40 452 A 296 296 0 0 1 552 452" fill="none" stroke="#ffffff" stroke-opacity="0.35" stroke-width="4"/>
+    <circle cx="18" cy="430.1" r="25.3" fill="#d9ecff"/>
+    <circle cx="43.3" cy="409.4" r="32.2" fill="#d9ecff"/>
+    <circle cx="75.5" cy="402.5" r="36.8" fill="#d9ecff"/>
+    <circle cx="105.4" cy="420.9" r="27.6" fill="#d9ecff"/>
+    <circle cx="123.8" cy="434.7" r="19.3" fill="#d9ecff"/>
+    <circle cx="18" cy="424.6" r="25.3" fill="#ffffff"/>
+    <circle cx="43.3" cy="403.9" r="32.2" fill="#ffffff"/>
+    <circle cx="75.5" cy="397" r="36.8" fill="#ffffff"/>
+    <circle cx="105.4" cy="415.4" r="27.6" fill="#ffffff"/>
+    <circle cx="123.8" cy="429.2" r="19.3" fill="#ffffff"/>
+    <circle cx="408" cy="441.7" r="24.2" fill="#d9ecff"/>
+    <circle cx="432.2" cy="421.9" r="30.8" fill="#d9ecff"/>
+    <circle cx="463" cy="415.3" r="35.2" fill="#d9ecff"/>
+    <circle cx="491.6" cy="432.9" r="26.4" fill="#d9ecff"/>
+    <circle cx="509.2" cy="446.1" r="18.5" fill="#d9ecff"/>
+    <circle cx="408" cy="436.4" r="24.2" fill="#ffffff"/>
+    <circle cx="432.2" cy="416.6" r="30.8" fill="#ffffff"/>
+    <circle cx="463" cy="410" r="35.2" fill="#ffffff"/>
+    <circle cx="491.6" cy="427.6" r="26.4" fill="#ffffff"/>
+    <circle cx="509.2" cy="440.8" r="18.5" fill="#ffffff"/>
+    <circle cx="18" cy="476.8" r="22" fill="#d9ecff"/>
+    <circle cx="40" cy="458.8" r="28" fill="#d9ecff"/>
+    <circle cx="68" cy="452.8" r="32" fill="#d9ecff"/>
+    <circle cx="94" cy="468.8" r="24" fill="#d9ecff"/>
+    <circle cx="110" cy="480.8" r="16.8" fill="#d9ecff"/>
+    <circle cx="18" cy="472" r="22" fill="#ffffff"/>
+    <circle cx="40" cy="454" r="28" fill="#ffffff"/>
+    <circle cx="68" cy="448" r="32" fill="#ffffff"/>
+    <circle cx="94" cy="464" r="24" fill="#ffffff"/>
+    <circle cx="110" cy="476" r="16.8" fill="#ffffff"/>
+    <circle cx="418" cy="482.4" r="20.9" fill="#d9ecff"/>
+    <circle cx="438.9" cy="465.3" r="26.6" fill="#d9ecff"/>
+    <circle cx="465.5" cy="459.6" r="30.4" fill="#d9ecff"/>
+    <circle cx="490.2" cy="474.8" r="22.8" fill="#d9ecff"/>
+    <circle cx="505.4" cy="486.2" r="16" fill="#d9ecff"/>
+    <circle cx="418" cy="477.8" r="20.9" fill="#ffffff"/>
+    <circle cx="438.9" cy="460.7" r="26.6" fill="#ffffff"/>
+    <circle cx="465.5" cy="455" r="30.4" fill="#ffffff"/>
+    <circle cx="490.2" cy="470.2" r="22.8" fill="#ffffff"/>
+    <circle cx="505.4" cy="481.6" r="16" fill="#ffffff"/>
+    <ellipse cx="112" cy="214" rx="17" ry="21" fill="#d98a00"/>
+    <ellipse cx="109" cy="214" rx="15" ry="20" fill="#ffc533"/>
+    <ellipse cx="109" cy="214" rx="7" ry="11" fill="none" stroke="#d98a00" stroke-width="4"/>
+    <ellipse cx="88" cy="284" rx="13.6" ry="16.8" fill="#d98a00"/>
+    <ellipse cx="85.6" cy="284" rx="12" ry="16" fill="#ffc533"/>
+    <ellipse cx="85.6" cy="284" rx="5.6" ry="8.8" fill="none" stroke="#d98a00" stroke-width="3.2"/>
+    <polygon points="158.3,416 256,464.8 256,498.8 158.3,450" fill="#d98a70"/>
+    <polygon points="256,464.8 353.7,416 353.7,450 256,498.8" fill="#b0644f"/>
+    <polygon points="197.9,450 256,479 256,509 197.9,480" fill="#d98a70"/>
+    <polygon points="256,479 314.1,450 314.1,480 256,509" fill="#b0644f"/>
+    <polygon points="124,364 256,430 256,482 124,416" fill="url(#dirtL)"/>
+    <polygon points="256,430 388,364 388,416 256,482" fill="url(#dirtR)"/>
+    <polygon points="124,346 256,412 256,430 124,364" fill="#4cc496"/>
+    <polygon points="256,412 388,346 388,364 256,430" fill="#36a37b"/>
+    <path d="M 168 386 L 168 438" fill="none" stroke="#8e5245" stroke-opacity="0.45" stroke-width="2.5"/>
+    <path d="M 344 386 L 344 438" fill="none" stroke="#8e5245" stroke-opacity="0.45" stroke-width="2.5"/>
+    <path d="M 212 408 L 212 460" fill="none" stroke="#8e5245" stroke-opacity="0.45" stroke-width="2.5"/>
+    <path d="M 300 408 L 300 460" fill="none" stroke="#8e5245" stroke-opacity="0.45" stroke-width="2.5"/>
+    <ellipse cx="146" cy="376" rx="15" ry="7" fill="#4cc496"/>
+    <ellipse cx="366" cy="376" rx="15" ry="7" fill="#36a37b"/>
+    <ellipse cx="190" cy="398" rx="15" ry="7" fill="#4cc496"/>
+    <ellipse cx="322" cy="398" rx="15" ry="7" fill="#36a37b"/>
+    <ellipse cx="234" cy="420" rx="15" ry="7" fill="#4cc496"/>
+    <ellipse cx="278" cy="420" rx="15" ry="7" fill="#36a37b"/>
+    <polygon points="256,280 300,302 256,324 212,302" fill="#74dfb7"/>
+    <polygon points="212,302 256,324 212,346 168,324" fill="#68d6ad"/>
+    <polygon points="168,324 212,346 168,368 124,346" fill="#74dfb7"/>
+    <polygon points="300,302 344,324 300,346 256,324" fill="#68d6ad"/>
+    <polygon points="256,324 300,346 256,368 212,346" fill="#74dfb7"/>
+    <polygon points="212,346 256,368 212,390 168,368" fill="#68d6ad"/>
+    <polygon points="344,324 388,346 344,368 300,346" fill="#74dfb7"/>
+    <polygon points="300,346 344,368 300,390 256,368" fill="#68d6ad"/>
+    <polygon points="256,368 300,390 256,412 212,390" fill="#74dfb7"/>
+    <polyline points="124,346 256,280 388,346" fill="none" stroke="#a6f2d3" stroke-width="4" stroke-linejoin="round"/>
+    <polygon points="300,310.8 344,332.8 344,368 300,346" fill="#e39a80"/>
+    <polygon points="344,332.8 388,310.8 388,346 344,368" fill="#bf7561"/>
+    <polygon points="300,310.8 344,332.8 344,343.4 300,321.4" fill="#4cc496"/>
+    <polygon points="344,332.8 388,310.8 388,321.4 344,343.4" fill="#36a37b"/>
+    <polygon points="344,288.8 388,310.8 344,332.8 300,310.8" fill="#7fe5c0"/>
+    <polyline points="300,310.8 344,288.8 388,310.8" fill="none" stroke="#a6f2d3" stroke-width="3" stroke-linejoin="round"/>
+    <ellipse cx="322" cy="333.4" rx="12" ry="5.5" fill="#4cc496"/>
+    <ellipse cx="366" cy="333.4" rx="12" ry="5.5" fill="#36a37b"/>
+    <path d="M 187 336.1 l -5 -10 l 5 4 l 3 -12 l 3 12 l 5 -4 l -5 10 Z" fill="#3fae86"/>
+    <path d="M 253 382.3 l -5 -10 l 5 4 l 3 -12 l 3 12 l 5 -4 l -5 10 Z" fill="#3fae86"/>
+    <circle cx="193.3" cy="354.1" r="4.5" fill="#ffffff"/>
+    <circle cx="199" cy="356.9" r="4.5" fill="#ffffff"/>
+    <circle cx="196.8" cy="361.4" r="4.5" fill="#ffffff"/>
+    <circle cx="189.8" cy="361.4" r="4.5" fill="#ffffff"/>
+    <circle cx="187.6" cy="356.9" r="4.5" fill="#ffffff"/>
+    <circle cx="193.3" cy="358.1" r="3.5" fill="#ffd23f"/>
+    <ellipse cx="256" cy="346" rx="46" ry="14" fill="#1d2a55" fill-opacity="0.22"/>
+    <ellipse cx="222" cy="265.1" rx="14" ry="19" fill="#646bd8" transform="rotate(-18 222 265.1)"/>
+    <ellipse cx="252" cy="265.1" rx="14" ry="19" fill="#646bd8" transform="rotate(0 252 265.1)"/>
+    <ellipse cx="282" cy="265.1" rx="14" ry="19" fill="#646bd8" transform="rotate(18 282 265.1)"/>
+    <path d="M 198.7 238.5 L 152 201.5" fill="none" stroke="#646bd8" stroke-width="22" stroke-linecap="round"/>
+    <circle cx="152" cy="201.5" r="15" fill="#7f86ee"/>
+    <circle cx="155" cy="197.5" r="5" fill="#ffffff" fill-opacity="0.35"/>
+    <path d="M 305.3 238.5 L 352 201.5" fill="none" stroke="#646bd8" stroke-width="22" stroke-linecap="round"/>
+    <circle cx="352" cy="201.5" r="15" fill="#7f86ee"/>
+    <circle cx="349" cy="197.5" r="5" fill="#ffffff" fill-opacity="0.35"/>
+    <circle cx="252" cy="200" r="74" fill="url(#helmet)"/>
+    <circle cx="252" cy="200" r="72.5" fill="none" stroke="#b9c6e6" stroke-width="3"/>
+    <circle cx="260" cy="206" r="48.8" fill="#1d2a55"/>
+    <circle cx="260" cy="208" r="39.8" fill="url(#face)"/>
+    <ellipse cx="260" cy="172.2" rx="7" ry="6" fill="#7f86ee"/>
+    <ellipse cx="245" cy="208" rx="7.5" ry="11" fill="#1d2a55"/>
+    <circle cx="247.5" cy="203" r="2.8" fill="#ffffff"/>
+    <ellipse cx="275" cy="208" rx="7.5" ry="11" fill="#1d2a55"/>
+    <circle cx="277.5" cy="203" r="2.8" fill="#ffffff"/>
+    <path d="M 251 225 Q 260 233 269 225" fill="none" stroke="#1d2a55" stroke-width="4.5" stroke-linecap="round"/>
+    <ellipse cx="235" cy="222" rx="6" ry="4" fill="#ff9fd0" fill-opacity="0.8"/>
+    <ellipse cx="285" cy="222" rx="6" ry="4" fill="#ff9fd0" fill-opacity="0.8"/>
+    <path d="M 229.7 185.5 A 36.6 36.6 0 0 1 255.1 169.9" fill="none" stroke="#ffffff" stroke-opacity="0.55" stroke-width="5" stroke-linecap="round"/>
+    <ellipse cx="218.7" cy="159.3" rx="15" ry="9" fill="#ffffff" transform="rotate(-35 218.7 159.3)"/>
+    <polygon points="404,49 421.3,84.1 460.1,89.8 432.1,117.1 438.7,155.7 404,137.5 369.3,155.7 375.9,117.1 347.9,89.8 386.7,84.1" fill="#c46a00" stroke="#c46a00" stroke-width="10" stroke-linejoin="round"/>
+    <polygon points="404,50 419.9,82.2 455.4,87.3 429.7,112.3 435.7,147.7 404,131 372.3,147.7 378.3,112.3 352.6,87.3 388.1,82.2" fill="#e08a00" stroke="#e08a00" stroke-width="8" stroke-linejoin="round"/>
+    <polygon points="404,54 418.7,83.8 451.6,88.5 427.8,111.7 433.4,144.5 404,129 374.6,144.5 380.2,111.7 356.4,88.5 389.3,83.8" fill="url(#gold)" stroke="#ffe680" stroke-width="3" stroke-linejoin="round"/>
+    <polygon points="396,75 401.6,86.3 414.1,88.1 405,96.9 407.2,109.4 396,103.5 384.8,109.4 387,96.9 377.9,88.1 390.4,86.3" fill="#ffffff" fill-opacity="0.3"/>
+    <polygon points="338,69 340.1,79.1 350.4,78 341.5,83.1 345.6,92.5 338,85.6 330.4,92.5 334.5,83.1 325.6,78 335.9,79.1" fill="#ffffff"/>
+    <polygon points="434,158 435.6,165.7 443.5,164.9 436.7,168.9 439.9,176.1 434,170.8 428.1,176.1 431.3,168.9 424.5,164.9 432.4,165.7" fill="#ffffff"/>
+    <polygon points="466,46 467.3,52.2 473.6,51.5 468.1,54.7 470.7,60.5 466,56.2 461.3,60.5 463.9,54.7 458.4,51.5 464.7,52.2" fill="#ffffff"/>
+    <circle cx="110" cy="502.8" r="22" fill="#d9ecff"/>
+    <circle cx="132" cy="484.8" r="28" fill="#d9ecff"/>
+    <circle cx="160" cy="478.8" r="32" fill="#d9ecff"/>
+    <circle cx="186" cy="494.8" r="24" fill="#d9ecff"/>
+    <circle cx="202" cy="506.8" r="16.8" fill="#d9ecff"/>
+    <circle cx="110" cy="498" r="22" fill="#ffffff"/>
+    <circle cx="132" cy="480" r="28" fill="#ffffff"/>
+    <circle cx="160" cy="474" r="32" fill="#ffffff"/>
+    <circle cx="186" cy="490" r="24" fill="#ffffff"/>
+    <circle cx="202" cy="502" r="16.8" fill="#ffffff"/>
   </g>
-  <!-- the little island -->
-  <path d="M206 128 L230 140 L206 152 L182 140 Z" fill="#5fd6a8"/>
-  <path d="M182 140 L206 152 L206 178 L182 166 Z" fill="#e0947c"/>
-  <path d="M206 152 L230 140 L230 166 L206 178 Z" fill="#bb6f5c"/>
-  <!-- the big island: a stack of grass blocks -->
-  <path d="M84 118 L136 144 L84 170 L32 144 Z" fill="#5fd6a8"/>
-  <path d="M32 144 L84 170 L84 226 L32 200 Z" fill="#e0947c"/>
-  <path d="M84 170 L136 144 L136 200 L84 226 Z" fill="#bb6f5c"/>
-  <path d="M32 144 L84 170 L84 178 L32 152 Z" fill="#46b88c"/>
-  <path d="M84 170 L136 144 L136 152 L84 178 Z" fill="#3a9e78"/>
-  <path d="M32 172 L84 198 L136 172" fill="none" stroke="#8e5245" stroke-width="2.5" opacity="0.5"/>
-  <!-- the astronaut, round and white, waving from the top -->
-  <ellipse cx="84" cy="146" rx="15" ry="5" fill="#1d2a55" opacity="0.25"/>
-  <circle cx="84" cy="128" r="16" fill="#f4f8ff"/>
-  <ellipse cx="89" cy="125" rx="8" ry="6" fill="#1d2a55"/>
-  <ellipse cx="91" cy="123" rx="2.5" ry="2" fill="#ffffff"/>
-  <!-- a star to find -->
-  <path d="M150 30 L157.6 47.6 L176.6 49.3 L162.2 61.9 L166.5 80.5 L150 70.7 L133.5 80.5 L137.8 61.9 L123.4 49.3 L142.4 47.6 Z" fill="#ffd23f" stroke="#1d2a55" stroke-width="5" stroke-linejoin="round"/>
 </svg>

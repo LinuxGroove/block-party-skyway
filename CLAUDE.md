@@ -17,6 +17,7 @@ godot --path . -- --course=sawmill                                  # straight i
 xvfb-run -a -s "-screen 0 1280x720x24" godot --path . --resolution 1280x720 tools/screenshot.tscn -- /tmp/shot.png course=sawmill
 xvfb-run -a -s "-screen 0 1280x720x24" godot --path . --resolution 1280x720 tools/screenshot.tscn -- --all=docs/screenshots [world=frosty]
 python3 tools/palettes.py                                           # the worlds' block colour maps
+python3 tools/make_icon.py                                          # the icon: icon.svg, the snap's copy and icon.png
 ```
 
 Run the script check and the tests before every commit. A new `class_name` needs an `--import` before the script check finds it. Headless runs reimport assets and rewrite many `*.glb.import` files and `icon.png.import`; revert those (`git checkout -- '*.import'`, `rm icon.png.import`) unless you meant to change them.
@@ -38,7 +39,7 @@ Run the script check and the tests before every commit. A new `class_name` needs
 | `tests/run_tests.gd` | Headless test runner; add checks with `check(ok, "what")` |
 | `tests/worlds/<world>_tests.gd` | A world's island and boss tests (`run()`), and the pilot's legs through each of its courses (`legs()`) |
 | `tests/course_pilot.gd` | Drives the hero along legs (run, jump, steer to a landing spot, wall kicks), for course and island tests |
-| `tools/` | Script checker, screenshots, `palettes.py`, `probe_models.gd` (model sizes), `version.sh`, `release.sh` |
+| `tools/` | Script checker, screenshots, `palettes.py`, `probe_models.gd` (model sizes), the icon (`make_icon.py`; edit it rather than the SVG), `version.sh`, `release.sh` |
 | `docs/screenshots/<world>/` | A screenshot of every level, made by `tools/screenshot.tscn -- --all=docs/screenshots` |
 
 ## How the game is built
