@@ -140,6 +140,7 @@ func run() -> void:
 	t._fast(false)
 	await t._free(play)
 	await _boss()
+	await _pinch_moves()
 
 
 # --- Captain Pinch -----------------------------------------------------------
@@ -216,6 +217,82 @@ func _boss() -> void:
 	play.hero.place(Vector3(0, 0.5, 16))
 	await t._until(func(): return play.hero.global_position.z < 12.0, 3.0)
 	t.check(play.hero.global_position.distance_to(arena.spawn) < 3.0, "falling in the sea comes back at the arena's flag")
+	t._fast(false)
+	await t._free(play)
+
+
+## Captain Pinch walks back to the middle from anywhere on the sand bar,
+## round the rocks, even from the corners past them; his red line shows
+## where a charge will stop; he says how to beat him at the start and when
+## a charge misses the rocks; dizzy, his sides are harmless and a stomp
+## hits him; and a stomp on his shell hurts, and says why.
+func _pinch_moves() -> void:
+	t._fast(true)
+	var play := t._make_play("pinch", "adventure")
+	await t._ticks(6)
+	play.autopilot = t._hands_off
+	var arena := play.level as SunnyPinchArena
+	var pinch := arena.boss as SunnyPinch
+	var said: Array[String] = []
+	arena.message.connect(func(text: String): said.append(text))
+	var h := play.hero
+	# Out of his way while he walks about.
+	h.lock(1000.0)
+	var stuck: Array[String] = []
+	var spots: Array[Vector3] = []
+	for i in SunnyPinchArena.ROCKS:
+		var gap := TAU * i / SunnyPinchArena.ROCKS
+		for off in [-0.17, 0.17]:
+			spots.append(Vector3(sin(gap + off), 0, cos(gap + off)) * (pinch.edge - 0.1))
+		var r := arena.rock_spots[i]
+		spots.append(r * (1.0 - (pinch.rock_radius + 1.1) / r.length()))
+	for at in spots:
+		pinch.global_position = at
+		pinch._start(SunnyPinch.Act.BACK)
+		await t._until(func(): return pinch.act != SunnyPinch.Act.BACK, SunnyPinch.BACK_TIME + 0.5)
+		if Vector3(pinch.global_position.x, 0, pinch.global_position.z).length() > 0.5:
+			stuck.append("%.1f,%.1f" % [at.x, at.z])
+	t.check(stuck.is_empty(), "Captain Pinch walks back to the middle round the rocks from anywhere (stuck from %s)" % [stuck])
+	# His line runs to the rock a charge will hit, or to the water's edge.
+	var rock: Vector3 = arena.rock_spots[0]
+	pinch.global_position = Vector3.ZERO
+	pinch.dir = rock.normalized()
+	var end := pinch.rush_end(30.0)
+	t.check(Vector3(end.x - rock.x, 0, end.z - rock.z).length() < pinch.rock_radius + 1.4, "a charge at a rock stops at the rock (%s)" % end)
+	pinch.dir = Vector3.FORWARD
+	end = pinch.rush_end(30.0)
+	t.check(end.length() > pinch.edge - 0.3, "a charge at a gap stops at the water's edge (%s)" % end)
+	pinch.scuttles_left = 0
+	pinch._face(Vector3.FORWARD)
+	pinch._start(SunnyPinch.Act.AIM_CHARGE)
+	await t._ticks(3)
+	var b: Basis = pinch._line.global_transform.basis
+	t.check(pinch._line.visible and b.z.normalized().cross(pinch.dir).length() < 0.05 and absf(b.x.length() - 1.0) < 0.05, "a red line shows where he'll charge")
+	t.check(said.any(func(s): return "rock" in s and "dizzy" in s), "he says how to beat him: a rock, then a jump while he's dizzy")
+	# Charging past the rocks, he's told about it.
+	await t._until(func(): return pinch.act == SunnyPinch.Act.SKID, 3.0)
+	t.check(pinch.act == SunnyPinch.Act.SKID and not pinch._line.visible, "a charge at a gap skids at the water's edge")
+	t.check(said.any(func(s): return "missed" in s), "a charge that misses the rocks says how to aim him")
+	await t._until(func(): return pinch.act == SunnyPinch.Act.BACK, 2.0)
+	# Dizzy, he's harmless from the side, and a stomp hits him.
+	h.lock(0.0)
+	pinch.global_position = Vector3(0, 0, -4)
+	pinch._face(Vector3.BACK)
+	pinch._bonk(arena.rock_spots[3])
+	var hearts := play.hearts
+	h.place(pinch.global_position + pinch.facing * 1.0 + Vector3.UP * 0.05)
+	await t._ticks(10)
+	t.check(play.hearts == hearts and pinch.health == 3 and pinch.open, "dizzy, his sides don't hurt (hearts %d of %d)" % [play.hearts, hearts])
+	h.place(pinch.global_position + Vector3.UP * 2.6)
+	t.check(await t._until(func(): return pinch.health == 2, 1.5), "jumping on him while he's dizzy hits him")
+	# Not dizzy, a stomp on his shell hurts and says why.
+	await t._until(func(): return pinch.invulnerable <= 0.0 and h.is_on_floor() and h.safe_time <= 0.0, 4.0)
+	pinch._start(SunnyPinch.Act.WAIT)
+	hearts = play.hearts
+	h.place(pinch.global_position + Vector3.UP * 2.6)
+	await t._until(func(): return play.hearts < hearts, 1.5)
+	t.check(play.hearts == hearts - 1 and pinch.health == 2, "a stomp on his shell hurts while he isn't dizzy")
+	t.check(said.any(func(s): return "shell" in s), "and he says to make him charge a rock first")
 	t._fast(false)
 	await t._free(play)
 
