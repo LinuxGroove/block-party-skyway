@@ -210,4 +210,4 @@ func _show_line() -> void:
 	var from := global_position + _dir * (BODY.x / 2.0)
 	var to := global_position + (_end - position)
 	var length := maxf(from.distance_to(to), 0.1)
-	_line.global_transform = Transform3D(Basis.looking_at(_dir, Vector3.UP).scaled(Vector3(1, 1, length)), (from + to) / 2.0 + Vector3.UP * 0.05)
+	_line.global_transform = Transform3D(Basis.looking_at(_dir, Vector3.UP).scaled_local(Vector3(1, 1, length)), (from + to) / 2.0 + Vector3.UP * 0.05)
