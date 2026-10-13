@@ -100,6 +100,7 @@ func _ready() -> void:
 	results = ResultsPanel.new()
 	layer.add_child(results)
 	results.setup(self)
+	LGFocusPause.watch(self, _pause_from_focus)
 	hero.jumped.connect(_on_jumped)
 	hero.landed.connect(_on_landed)
 	hero.pounded.connect(_on_pounded)
@@ -200,9 +201,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		pause.open()
 
 
-func _notification(what: int) -> void:
-	# Pause when the window loses focus (a handheld's overlay, alt-tab).
-	if what == NOTIFICATION_APPLICATION_FOCUS_OUT and is_inside_tree() and pause and not pause.visible and not results.visible and DisplayServer.get_name() != "headless":
+## Pauses when the window loses focus (a handheld's overlay, alt-tab).
+func _pause_from_focus() -> void:
+	if not pause.visible and not results.visible:
 		pause.open()
 
 

@@ -619,6 +619,7 @@ func _test_skyway() -> void:
 	var rows := play.pause.find_children("*", "Button", true, false).filter(func(b): return str(b.text).contains("stars") or str(b.text).contains("faded"))
 	check(rows.size() == Worlds.built().size(), "the pause menu lists every built world (%d)" % rows.size())
 	play.pause.close()
+	await _check_focus_pause(play.get_node_or_null("FocusPause"), play.pause.is_visible, play.pause.close)
 	await _free(play)
 	# Arriving through a door or gate puts the hero in front of it.
 	play = _make_play("sunny", "adventure", {"door": "sawmill"})
@@ -881,6 +882,38 @@ func _pad(button: JoyButton) -> void:
 		await get_tree().process_frame
 	# The input router drops a second press of the same direction this soon.
 	await get_tree().create_timer(LGInput.NAV_DEBOUNCE_MSEC / 1000.0).timeout
+
+
+## The window losing focus opens the pause menu (LGFocusPause), unless focus
+## comes straight back, the setting is off or the on-screen keyboard is up.
+func _check_focus_pause(watcher: LGFocusPause, menu_open: Callable, close: Callable, pauses := true) -> void:
+	check(watcher != null, "the game watches for the window losing focus")
+	if watcher == null:
+		return
+	# The watcher counts real milliseconds, so wait in real time.
+	var grace := LGFocusPause.GRACE_MSEC / 1000.0 + 0.15
+	watcher.focus_lost()
+	await get_tree().process_frame
+	watcher.focus_back()
+	await get_tree().create_timer(grace, true, false, true).timeout
+	check(not menu_open.call(), "focus coming straight back doesn't open the pause menu")
+	watcher.focus_lost()
+	await get_tree().create_timer(grace, true, false, true).timeout
+	check(menu_open.call() and get_tree().paused == pauses, "losing focus opens the pause menu")
+	if pauses:
+		check(not watcher.pause_now(), "losing focus again while paused does nothing")
+	close.call()
+	await get_tree().process_frame
+	check(not menu_open.call() and not get_tree().paused, "the game carries on after Resume")
+	LGSettings.set_value("video", "focus_pause", false, false)
+	check(not watcher.pause_now() and not menu_open.call(), "Pause when switching away can be turned off")
+	LGSettings.set_value("video", "focus_pause", true, false)
+	var field := LineEdit.new()
+	add_child(field)
+	OnScreenKeyboard.open(field)
+	check(not watcher.pause_now() and not menu_open.call(), "losing focus leaves the on-screen keyboard alone")
+	field.queue_free()
+	await _frames(2)
 
 
 func _focus_in(node: Node) -> bool:
