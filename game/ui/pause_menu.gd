@@ -77,6 +77,7 @@ func open() -> void:
 	visible = true
 	_panel.visible = true
 	get_tree().paused = true
+	LGAudio.pause_game(true)
 	LGUi.focus_first(_col)
 
 
@@ -85,6 +86,7 @@ func close() -> void:
 		return
 	visible = false
 	get_tree().paused = false
+	LGAudio.pause_game(false)
 	var f := get_viewport().gui_get_focus_owner()
 	if f:
 		f.release_focus()
